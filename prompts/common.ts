@@ -64,6 +64,13 @@ export async function getCode(
         description = "";
       }
 
+      // Remove texto explicativo que o modelo tenha incluído antes do código real
+      const codeStartRegex = /^(import |export |function |const |let |var |class |interface |type |<[A-Za-z]|\"use client|'use client|\/\/|<!--|<template|<script)/m;
+      const startMatch = code.match(codeStartRegex);
+      if (startMatch && startMatch.index !== undefined) {
+        code = code.substring(startMatch.index);
+      }
+
       return {
         code,
         usage: chatCompletion.usage,
