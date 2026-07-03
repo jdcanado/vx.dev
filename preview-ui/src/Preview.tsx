@@ -1,5 +1,6 @@
+import { ResponsiveBar } from '@nivo/bar';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Calendar, Badge, LogIn, ArrowRight, X, Menu, Users, Check, Clock, ChevronRight, Star } from 'lucide-react';
+import { Home, Badge, LogIn, ArrowRight, X, Menu, Users, Check, Clock, Shield, Zap, DollarSign, Calendar, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
@@ -7,58 +8,120 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Slider } from '@/components/ui/slider';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 
-export default function LandingPage() {
+// ---------------------- Helper Components (static, inline) ----------------------
+function BeforeAfterChart() {
+  return (
+    <div className="h-80 w-full">
+      <ResponsiveBar
+        data={[
+          { category: "Before Agenda AI", conflicts: 12 },
+          { category: "After Agenda AI", conflicts: 2 },
+        ]}
+        keys={["conflicts"]}
+        indexBy="category"
+        margin={{ top: 50, right: 50, bottom: 50, left: 60 }}
+        padding={0.3}
+        valueScale={{ type: "linear", min: 0, max: 15 }}
+        indexScale={{ type: "band", round: true }}
+        colors={({ id, data }) =>
+          data.category === "Before Agenda AI"
+            ? "#f43f5e"
+            : "#6366f1"
+        }
+        borderWidth={1}
+        borderColor={{
+          from: "color",
+          modifiers: [["darker", 0.2]],
+        }}
+        axisBottom={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: "",
+          legendPosition: "middle",
+          legendOffset: 32,
+        }}
+        axisLeft={{
+          tickSize: 5,
+          tickPadding: 5,
+          tickRotation: 0,
+          legend: "Meetings Conflicts per Week",
+          legendPosition: "middle",
+          legendOffset: -40,
+        }}
+        legends={[
+          {
+            dataFrom: "keys",
+            anchor: "bottom-right",
+            direction: "column",
+            justify: false,
+            translateX: 120,
+            translateY: 0,
+            itemsSpacing: 2,
+            itemWidth: 100,
+            itemHeight: 20,
+            itemDirection: "left-to-right",
+            itemOpacity: 0.85,
+            symbolSize: 20,
+          },
+        ]}
+      />
+    </div>
+  );
+}
+
+// ---------------------- Main Component ----------------------
+export default function LandingPageRevised() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [email, setEmail] = React.useState("");
+  const [date, setDate] = React.useState(new Date());
+  const [meetingsPerWeek, setMeetingsPerWeek] = React.useState(10);
+  const [avgDuration, setAvgDuration] = React.useState(45); // minutes
+  const [isAnnual, setIsAnnual] = React.useState(false);
+
+  // Time savings calculation
+  const yearlySavings =
+    isAnnual
+      ? ((meetingsPerWeek * avgDuration * 0.3) / 60).toFixed(1) // hours saved per week
+      : ((meetingsPerWeek * avgDuration * 0.2) / 60).toFixed(1);
+  const yearlyCost = isAnnual ? 180 : 12 * 15; // Pro annual $180 vs monthly $15*12
 
   return (
     <TooltipProvider>
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
         {/* ---- Header/Navbar ---- */}
-        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/70 border-b border-slate-200/50">
+        <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200/50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <div className="flex items-center gap-2">
-                <Calendar className="h-6 w-6 text-indigo-600" />
+                <div className="h-6 w-6 text-indigo-600" />
                 <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Agenda AI
                 </span>
-                <Badge variant="outline" className="ml-2 text-xs font-medium">
+                <Badge variant="outline" className="ml-2 text-xs font-medium border-indigo-200 text-indigo-600">
                   Beta
                 </Badge>
               </div>
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center space-x-1">
-                <a
-                  href="#features"
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
-                >
-                  Features
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
-                >
-                  How It Works
-                </a>
-                <a
-                  href="#testimonials"
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
-                >
-                  Testimonials
-                </a>
-                <a
-                  href="#pricing"
-                  className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
-                >
-                  Pricing
-                </a>
+                {["Features", "How It Works", "Testimonials", "Pricing"].map(
+                  (item) => (
+                    <a
+                      key={item}
+                      href={`#${item.toLowerCase().replace(/ /g, "-")}`}
+                      className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
+                    >
+                      {item}
+                    </a>
+                  )
+                )}
               </nav>
 
               {/* Desktop CTA */}
@@ -69,7 +132,7 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-md shadow-indigo-200"
                 >
                   Get Started Free
                   <ArrowRight className="h-4 w-4" />
@@ -98,34 +161,18 @@ export default function LandingPage() {
           {mobileMenuOpen && (
             <div className="md:hidden bg-white border-t border-slate-200">
               <div className="px-4 py-3 space-y-2">
-                <a
-                  href="#features"
-                  className="block py-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Features
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="block py-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  How It Works
-                </a>
-                <a
-                  href="#testimonials"
-                  className="block py-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Testimonials
-                </a>
-                <a
-                  href="#pricing"
-                  className="block py-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Pricing
-                </a>
+                {["Features", "How It Works", "Testimonials", "Pricing"].map(
+                  (item) => (
+                    <a
+                      key={item}
+                      href={`#${item.toLowerCase().replace(/ /g, "-")}`}
+                      className="block py-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item}
+                    </a>
+                  )
+                )}
                 <Separator />
                 <Button variant="ghost" size="sm" className="w-full gap-2">
                   <LogIn className="h-4 w-4" />
@@ -145,31 +192,29 @@ export default function LandingPage() {
 
         {/* ---- Hero Section ---- */}
         <section className="relative overflow-hidden">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
-          <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-10 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50" />
+          <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
+          <div className="absolute bottom-10 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000" />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
             <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
               <div className="mb-10 lg:mb-0">
-                <Badge
-                  variant="outline"
-                  className="mb-4 text-indigo-600 border-indigo-200"
-                >
-                  🚀 AI-Powered Scheduling
-                </Badge>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">
+                    🎉 Limited Offer – 50% off first year
+                  </Badge>
+                  <Badge variant="outline" className="text-slate-600 border-slate-300">
+                    Join 10,000+ users
+                  </Badge>
+                </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
-                  Never double‑book
-                  <br />
+                  Never double‑book{" "}
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    your day again
+                    again
                   </span>
                 </h1>
                 <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-lg">
-                  Agenda AI uses artificial intelligence to find the perfect
-                  time for your meetings — automatically. Connect your calendar
-                  and let the magic happen.
+                  Agenda AI uses artificial intelligence to find the perfect time for your meetings — automatically. Connect your calendar and let the magic happen.
                 </p>
 
                 {/* Early access form */}
@@ -186,7 +231,7 @@ export default function LandingPage() {
                   </div>
                   <Button
                     size="lg"
-                    className="bg-indigo-600 hover:bg-indigo-700 h-12 gap-2"
+                    className="bg-indigo-600 hover:bg-indigo-700 h-12 gap-2 shadow-lg shadow-indigo-200"
                   >
                     Start Free Trial
                     <ArrowRight className="h-5 w-5" />
@@ -195,34 +240,28 @@ export default function LandingPage() {
 
                 <p className="mt-4 text-sm text-slate-500 flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
-                  No credit card required · 14-day free trial
+                  No credit card required · 14-day free trial · Cancel anytime
                 </p>
               </div>
 
               {/* Hero illustration / dashboard mockup */}
               <div className="relative">
-                <div className="rounded-2xl shadow-2xl bg-white border border-slate-200 p-4 sm:p-6">
+                <div className="rounded-2xl shadow-2xl bg-white border border-slate-200 p-4 sm:p-6 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                      <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
-                    <span className="text-xs text-slate-400">
-                      agenda.ai/dashboard
-                    </span>
+                    <span className="text-xs text-slate-400">agenda.ai/dashboard</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <Card className="bg-indigo-50 border-indigo-100">
                       <CardContent className="p-4 flex items-center gap-3">
-                        <Calendar className="h-8 w-8 text-indigo-600" />
+                        <div className="h-8 w-8 text-indigo-600" />
                         <div>
-                          <p className="text-2xl font-bold text-indigo-900">
-                            12
-                          </p>
-                          <p className="text-xs text-indigo-700">
-                            Meetings this week
-                          </p>
+                          <p className="text-2xl font-bold text-indigo-900">12</p>
+                          <p className="text-xs text-indigo-700">Meetings this week</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -230,12 +269,8 @@ export default function LandingPage() {
                       <CardContent className="p-4 flex items-center gap-3">
                         <Clock className="h-8 w-8 text-purple-600" />
                         <div>
-                          <p className="text-2xl font-bold text-purple-900">
-                            8.5h
-                          </p>
-                          <p className="text-xs text-purple-700">
-                            Saved this month
-                          </p>
+                          <p className="text-2xl font-bold text-purple-900">8.5h</p>
+                          <p className="text-xs text-purple-700">Saved this month</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -248,10 +283,7 @@ export default function LandingPage() {
                           className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
                         >
                           <Checkbox id={`meeting-${idx}`} defaultChecked />
-                          <Label
-                            htmlFor={`meeting-${idx}`}
-                            className="text-sm font-medium"
-                          >
+                          <Label htmlFor={`meeting-${idx}`} className="text-sm font-medium">
                             {item}
                           </Label>
                           <span className="ml-auto text-xs text-slate-500">
@@ -263,16 +295,14 @@ export default function LandingPage() {
                   </div>
                 </div>
                 {/* Floating element */}
-                <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-lg p-3 flex items-center gap-3 border border-slate-200 animate-float">
+                <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-lg p-3 flex items-center gap-3 border border-slate-200 animate-bounce">
                   <Avatar>
                     <AvatarImage src="https://github.com/Yuyz0112.png" />
                     <AvatarFallback>AI</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">Agenda AI</p>
-                    <p className="text-xs text-slate-500">
-                      Perfect slot found!
-                    </p>
+                    <p className="text-xs text-slate-500">Perfect slot found!</p>
                   </div>
                   <Check className="h-4 w-4 text-green-500 ml-2" />
                 </div>
@@ -281,25 +311,53 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ---- Social Proof Bar ---- */}
-        <section className="py-10 border-y border-slate-200 bg-white">
+        {/* ---- Social Proof Bar + Trust Badges ---- */}
+        <section className="py-12 border-y border-slate-200 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-sm font-medium text-slate-500 mb-6">
+            <p className="text-center text-sm font-medium text-slate-500 mb-8">
               TRUSTED BY TEAMS AT
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center opacity-70">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center opacity-70 mb-8">
+              {["Stripe", "Shopify", "Figma", "Notion", "Vercel"].map(
+                (company) => (
+                  <div
+                    key={company}
+                    className="text-xl font-bold text-slate-400"
+                  >
+                    {company}
+                  </div>
+                )
+              )}
+            </div>
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                <Shield className="h-3 w-3 mr-1" /> SOC 2 Type II
+              </Badge>
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                <Zap className="h-3 w-3 mr-1" /> GDPR Compliant
+              </Badge>
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                <div className="h-3 w-3 mr-1" /> 256-bit Encryption
+              </Badge>
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Stats Section ---- */}
+        <section className="py-20 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
-                "Stripe",
-                "Shopify",
-                "Figma",
-                "Notion",
-                "Vercel",
-              ].map((company) => (
-                <div
-                  key={company}
-                  className="text-xl font-bold text-slate-400"
-                >
-                  {company}
+                { number: "10,000+", label: "Active Users" },
+                { number: "2.5M+", label: "Hours Saved" },
+                { number: "98%", label: "Satisfaction Rate" },
+                { number: "1.2M", label: "Meetings Scheduled" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-4xl font-extrabold text-indigo-600">
+                    {stat.number}
+                  </p>
+                  <p className="mt-1 text-slate-600 text-sm">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -320,15 +378,14 @@ export default function LandingPage() {
                 Everything you need to master your schedule
               </h2>
               <p className="mt-4 text-lg text-slate-600">
-                From smart scheduling to advanced analytics, Agenda AI gives you
-                the tools to take control of your time.
+                From smart scheduling to advanced analytics, Agenda AI gives you the tools to take control of your time.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: Calendar,
+                  icon: CalendarIcon,
                   title: "Smart Scheduling",
                   description:
                     "AI finds the best time for everyone based on calendar data, time zones, and preferences.",
@@ -364,9 +421,12 @@ export default function LandingPage() {
                     "Set intelligent reminders that learn your habits and reduce no‑shows.",
                 },
               ].map((feature) => (
-                <Card key={feature.title} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={feature.title}
+                  className="hover:shadow-lg transition-shadow group"
+                >
                   <CardHeader>
-                    <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center mb-4 group-hover:bg-indigo-200 transition-colors">
                       <feature.icon className="h-6 w-6 text-indigo-600" />
                     </div>
                     <CardTitle className="text-xl">{feature.title}</CardTitle>
@@ -379,6 +439,142 @@ export default function LandingPage() {
                 </Card>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ---- Time Savings Calculator ---- */}
+        <section className="py-20 bg-white border-t border-slate-200">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+                Interactive
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                See Your Time Savings
+              </h2>
+              <p className="mt-4 text-slate-600">
+                Adjust the sliders to estimate how much time Agenda AI can save you every week.
+              </p>
+            </div>
+            <div className="space-y-8">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Meetings per week: {meetingsPerWeek}
+                </label>
+                <Slider
+                  value={[meetingsPerWeek]}
+                  onValueChange={(vals) => setMeetingsPerWeek(vals[0])}
+                  min={1}
+                  max={30}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Average meeting length (minutes): {avgDuration}
+                </label>
+                <Slider
+                  value={[avgDuration]}
+                  onValueChange={(vals) => setAvgDuration(vals[0])}
+                  min={15}
+                  max={120}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+              <Card className="bg-indigo-50 border-indigo-100">
+                <CardContent className="p-6 flex items-center justify-between">
+                  <div>
+                    <p className="text-lg font-semibold text-indigo-900">
+                      Weekly time saved
+                    </p>
+                    <p className="text-3xl font-extrabold text-indigo-600">
+                      {yearlySavings} hours
+                    </p>
+                  </div>
+                  <DollarSign className="h-10 w-10 text-indigo-400" />
+                </CardContent>
+              </Card>
+              <div className="text-center text-sm text-slate-500">
+                Based on an average of 30% time saved per meeting (typical user result).
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Interactive AI Demo ---- */}
+        <section className="py-20 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+                Live Demo
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                Try Agenda AI
+              </h2>
+              <p className="mt-4 text-slate-600">
+                Pick a date and see how AI suggests the best time slots for you.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8 items-start max-w-5xl mx-auto">
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  className="rounded-md border shadow"
+                />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-4">
+                  Available Slots for{" "}
+                  {date.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </h3>
+                <div className="space-y-2">
+                  {/* Static slots, but we can make them responsive to date if we want */}
+                  {["9:00 AM", "10:15 AM", "1:30 PM", "3:45 PM"].map(
+                    (slot, idx) => (
+                      <Button
+                        key={idx}
+                        variant="outline"
+                        className="w-full justify-between group hover:bg-indigo-50 hover:border-indigo-300"
+                      >
+                        <span className="font-mono text-indigo-700">{slot}</span>
+                        <span className="text-sm text-green-600 flex items-center">
+                          <Check className="h-3 w-3 mr-1" /> Optimal
+                        </span>
+                      </Button>
+                    )
+                  )}
+                </div>
+                <p className="mt-6 text-sm text-slate-500">
+                  AI automatically ranks slots based on your past behavior and calendar density.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Before/After Chart ---- */}
+        <section className="py-20 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+                Real Results
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                See the Difference
+              </h2>
+              <p className="mt-4 text-slate-600">
+                Average weekly meeting conflicts dropped by 83% after adopting Agenda AI.
+              </p>
+            </div>
+            <BeforeAfterChart />
           </div>
         </section>
 
@@ -482,8 +678,18 @@ export default function LandingPage() {
                       "Finally, a tool that understands time zones! My clients and I are always on the same page now.",
                     avatar: "https://github.com/emily.png",
                   },
+                  {
+                    name: "David Kim",
+                    role: "CEO, StartupHub",
+                    quote:
+                      "Implementation was seamless. We were up and running in minutes, and the AI scheduling is eerily accurate.",
+                    avatar: "https://github.com/david.png",
+                  },
                 ].map((person) => (
-                  <CarouselItem key={person.name} className="md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem
+                    key={person.name}
+                    className="md:basis-1/2 lg:basis-1/3"
+                  >
                     <div className="p-1">
                       <Card className="border-slate-200 h-full">
                         <CardContent className="pt-6">
@@ -511,9 +717,7 @@ export default function LandingPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="text-sm font-medium">
-                                {person.name}
-                              </p>
+                              <p className="text-sm font-medium">{person.name}</p>
                               <p className="text-xs text-slate-500">
                                 {person.role}
                               </p>
@@ -535,10 +739,7 @@ export default function LandingPage() {
         <section id="pricing" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-indigo-600 border-indigo-200"
-              >
+              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
                 Pricing
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
@@ -547,6 +748,29 @@ export default function LandingPage() {
               <p className="mt-4 text-lg text-slate-600">
                 Start free and upgrade as you grow. No hidden fees.
               </p>
+              <div className="mt-6 flex justify-center">
+                <div className="bg-white border rounded-lg p-1 inline-flex gap-1 shadow-sm">
+                  <Button
+                    variant={isAnnual ? "ghost" : "default"}
+                    size="sm"
+                    onClick={() => setIsAnnual(false)}
+                    className={`${!isAnnual ? "bg-indigo-600 text-white" : "text-slate-600"}`}
+                  >
+                    Monthly
+                  </Button>
+                  <Button
+                    variant={isAnnual ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setIsAnnual(true)}
+                    className={`${isAnnual ? "bg-indigo-600 text-white" : "text-slate-600"}`}
+                  >
+                    Annually{" "}
+                    <span className="text-xs ml-1 bg-green-100 text-green-700 rounded px-1">
+                      Save 50%
+                    </span>
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -566,8 +790,8 @@ export default function LandingPage() {
                 },
                 {
                   name: "Pro",
-                  price: "$15",
-                  period: "/month",
+                  price: isAnnual ? "$7.50/mo" : "$15",
+                  period: isAnnual ? "" : "/month",
                   description: "For professionals and small teams.",
                   features: [
                     "Unlimited calendars",
@@ -628,12 +852,17 @@ export default function LandingPage() {
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="flex flex-col gap-2">
                     <Button
                       className={`w-full ${plan.popular ? "bg-indigo-600 hover:bg-indigo-700" : "bg-slate-900 hover:bg-slate-800"}`}
                     >
                       {plan.cta}
                     </Button>
+                    {plan.popular && (
+                      <Badge variant="outline" className="text-green-600 border-green-200">
+                        30-day money-back guarantee
+                      </Badge>
+                    )}
                   </CardFooter>
                 </Card>
               ))}
@@ -677,6 +906,11 @@ export default function LandingPage() {
                   answer:
                     "You get full access to all Pro features for 14 days. No credit card required. Cancel anytime, and your data will be deleted or exported upon request.",
                 },
+                {
+                  question: "Is there a money-back guarantee?",
+                  answer:
+                    "Yes! All paid plans come with a 30-day money-back guarantee. If you're not satisfied, contact us for a full refund.",
+                },
               ].map((faq, idx) => (
                 <AccordionItem key={idx} value={`item-${idx + 1}`}>
                   <AccordionTrigger className="text-left">
@@ -689,20 +923,27 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ---- CTA ---- */}
-        <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        {/* ---- Final CTA ---- */}
+        <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300 rounded-full mix-blend-overlay filter blur-3xl" />
+          </div>
+          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <Badge className="mb-4 bg-white/20 text-white border-none">
+              LIMITED TIME OFFER
+            </Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-white">
               Ready to reclaim your time?
             </h2>
             <p className="mt-4 text-lg text-indigo-100">
               Join 10,000+ professionals who already use Agenda AI to automate
-              their scheduling.
+              their scheduling. Start your free trial today.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Button
                 size="lg"
-                className="bg-white text-indigo-600 hover:bg-slate-100 gap-2"
+                className="bg-white text-indigo-600 hover:bg-slate-100 gap-2 shadow-xl"
               >
                 Start Free Trial
                 <ArrowRight className="h-5 w-5" />
@@ -715,6 +956,11 @@ export default function LandingPage() {
                 Talk to sales
               </Button>
             </div>
+            <p className="mt-6 text-sm text-indigo-200 flex items-center justify-center gap-2">
+              <Shield className="h-4 w-4" />
+              No credit card required · 14-day free trial · 30-day money-back
+              guarantee
+            </p>
           </div>
         </section>
 
@@ -723,9 +969,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3">
-                  Product
-                </h4>
+                <h4 className="text-sm font-semibold text-white mb-3">Product</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
                     <a href="#" className="hover:text-white transition-colors">
@@ -750,9 +994,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3">
-                  Company
-                </h4>
+                <h4 className="text-sm font-semibold text-white mb-3">Company</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
                     <a href="#" className="hover:text-white transition-colors">
@@ -777,9 +1019,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-white mb-3">
-                  Legal
-                </h4>
+                <h4 className="text-sm font-semibold text-white mb-3">Legal</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
                     <a href="#" className="hover:text-white transition-colors">
@@ -820,7 +1060,7 @@ export default function LandingPage() {
             <Separator className="my-8 bg-slate-800" />
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-indigo-400" />
+                <div className="h-5 w-5 text-indigo-400" />
                 <span className="text-white font-semibold">Agenda AI</span>
               </div>
               <p className="text-sm text-slate-500">
