@@ -1,0 +1,83 @@
+name: Deploy Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'ui-gen') ||
+      contains(github.event.pull_request.labels.*.name, 'vue-ui-gen') ||
+      contains(github.event.pull_request.labels.*.name, 'svelte-ui-gen')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Read build directory
+        id: build-dir
+        run: |
+          DIR=$(cat scripts/build-task 2>/dev/null || echo "preview-ui")
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+
+      - name: Build
+        env:
+          BASE_URL: /pr-${{ github.event.pull_request.number }}/
+        run: |
+          cd ${{ steps.build-dir.outputs.dir }}
+          yarn install
+          yarn build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ steps.build-dir.outputs.dir }}/dist
+          destination_dir: pr-${{ github.event.pull_request.number }}
+          keep_files: true
+          commit_message: "Deploy preview for PR #${{ github.event.pull_request.number }}"
+
+      - name: Comment preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const url = `https://${owner}.github.io/${repo}/pr-${prNumber}/`;
+
+            // Remove previous preview comments
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: prNumber
+            });
+            for (const c of comments) {
+              if (c.body.includes("Preview deployed")) {
+                await github.rest.issues.deleteComment({
+                  owner, repo, comment_id: c.id
+                });
+              }
+            }
+
+            // Add new preview comment
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: prNumber,
+              body: `🚀 **Preview deployed**: [${url}](${url})\n\n*(Updated ${new Date().toISOString()})*`
+            });
