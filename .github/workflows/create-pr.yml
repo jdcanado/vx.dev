@@ -21,17 +21,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          # Remove o cache ou especifique o caminho correto
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
       
       - name: Install dependencies
         run: |
-          npm install @octokit/rest @octokit/core universal-github-app-jwt openai
+          npm install @octokit/rest openai
+          # Gera o package-lock.json se não existir
+          npm install --package-lock-only
       
-      - name: Generate UI with Node.js
+      - name: Generate UI
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: node prompts/entry.js
+        run: npx tsx prompts/entry.ts
