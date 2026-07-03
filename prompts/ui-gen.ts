@@ -28,15 +28,16 @@ function mapImports(used: string[], declarations: Set<string>) {
     let source = "";
     let fallback = false;
 
-    for (const rule of shadcnRules) {
-      if (new RegExp(rule.matcher).test(u)) {
-        source = rule.source;
-        break;
-      }
-    }
-
-    if (!source && lucideIcons[u]) {
+    // Prioridade: ícones Lucide primeiro, depois componentes shadcn/ui
+    if (lucideIcons[u]) {
       source = "lucide-react";
+    } else {
+      for (const rule of shadcnRules) {
+        if (new RegExp(rule.matcher).test(u)) {
+          source = rule.source;
+          break;
+        }
+      }
     }
 
     if (!source && declarations.has(u)) {

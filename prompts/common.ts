@@ -33,7 +33,7 @@ export async function getCode(
       const chatCompletion = await openai.chat.completions.create({
         messages,
         model,
-        max_tokens: 16000,
+        max_tokens: 32000,
         temperature: 0,
       });
 
