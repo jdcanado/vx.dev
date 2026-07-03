@@ -10,7 +10,6 @@ import { fromMarkdown } from "https://esm.sh/mdast-util-from-markdown@2.0.0";
 import { visitParents } from "https://esm.sh/unist-util-visit-parents@6.0.1";
 import { toMarkdown } from "https://esm.sh/mdast-util-to-markdown@2.1.0";
 import { remove } from "https://esm.sh/unist-util-remove@4.0.0";
-import { Octokit } from "npm:octokit";
 import { checkValid } from "./quota.ts";
 
 const apiKey = Deno.env.get("OPENAI_API_KEY");
@@ -83,12 +82,211 @@ type IssueEvent = {
   };
 };
 
+// ── Native GitHub API client (fetch-based, no npm dependencies) ──────────
+
 const ghToken = Deno.env.get("GH_TOKEN");
 assert(ghToken, "failed to get github token");
 
-export const octokit = new Octokit({
-  auth: ghToken,
-});
+const GITHUB_API_BASE = "https://api.github.com";
+
+async function ghRequest(
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<{ data: unknown; headers: Headers }> {
+  const url = path.startsWith("http") ? path : `${GITHUB_API_BASE}${path}`;
+  const headers: Record<string, string> = {
+    "Authorization": `Bearer ${ghToken}`,
+    "Accept": "application/vnd.github.v3+json",
+    "User-Agent": "vx.dev",
+  };
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+  const res = await fetch(url, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`GitHub API ${method} ${path} failed (${res.status}): ${text}`);
+  }
+  const data = await res.json();
+  return { data, headers: res.headers };
+}
+
+// deno-lint-ignore no-explicit-any
+function createRestClient(): Record<string, Record<string, (...args: any[]) => any>> {
+  // deno-lint-ignore no-explicit-any
+  const rest: Record<string, Record<string, (...args: any[]) => any>> = {};
+
+  const def = (ns: string, method: string, httpMethod: string, pathTemplate: string) => {
+    if (!rest[ns]) rest[ns] = {};
+    rest[ns][method] = async (params: Record<string, unknown>) => {
+      let path = pathTemplate;
+      // replace {owner}, {repo}, {ref}, {issue_number}, {pull_number}, {commit_sha}, {workflow_id}
+      for (const [k, v] of Object.entries(params)) {
+        if (typeof v === "string" || typeof v === "number") {
+          path = path.replace(`{${k}}`, String(v));
+        }
+      }
+      // query params go on the URL, body goes as body
+      const queryParams = new URLSearchParams();
+      const bodyParams: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(params)) {
+        if (path.includes(`{${k}}`)) continue;
+        if (httpMethod === "GET" || httpMethod === "HEAD") {
+          if (v !== undefined && v !== null) queryParams.append(k, String(v));
+        } else {
+          if (k === "q" && ns === "search") {
+            queryParams.append(k, String(v));
+          } else {
+            bodyParams[k] = v;
+          }
+        }
+      }
+      let qs = queryParams.toString();
+      // Special handling for search/actions endpoints that use query string for GET
+      if (httpMethod === "GET" && Object.keys(bodyParams).length > 0) {
+        for (const [k, v] of Object.entries(bodyParams)) {
+          if (v !== undefined && v !== null) queryParams.append(k, String(v));
+        }
+        qs = queryParams.toString();
+      }
+      const fullPath = qs ? `${path}?${qs}` : path;
+      const body = httpMethod !== "GET" && Object.keys(bodyParams).length > 0 ? bodyParams : undefined;
+      const { data } = await ghRequest(httpMethod, fullPath, body);
+      return { data };
+    };
+  };
+
+  // Repos
+  def("repos", "getContent", "GET", "/repos/{owner}/{repo}/contents/{path}");
+
+  // Issues
+  def("issues", "get", "GET", "/repos/{owner}/{repo}/issues/{issue_number}");
+  def("issues", "listComments", "GET", "/repos/{owner}/{repo}/issues/{issue_number}/comments");
+  def("issues", "setLabels", "PUT", "/repos/{owner}/{repo}/issues/{issue_number}/labels");
+  def("issues", "createComment", "POST", "/repos/{owner}/{repo}/issues/{issue_number}/comments");
+
+  // Pulls
+  def("pulls", "create", "POST", "/repos/{owner}/{repo}/pulls");
+  def("pulls", "get", "GET", "/repos/{owner}/{repo}/pulls/{pull_number}");
+  def("pulls", "listReviewComments", "GET", "/repos/{owner}/{repo}/pulls/{pull_number}/comments");
+
+  // Search
+  def("search", "issuesAndPullRequests", "GET", "/search/issues");
+
+  // Git
+  def("git", "getRef", "GET", "/repos/{owner}/{repo}/git/ref/{ref}");
+  def("git", "createRef", "POST", "/repos/{owner}/{repo}/git/refs");
+  def("git", "createBlob", "POST", "/repos/{owner}/{repo}/git/blobs");
+  def("git", "getCommit", "GET", "/repos/{owner}/{repo}/git/commits/{commit_sha}");
+  def("git", "createTree", "POST", "/repos/{owner}/{repo}/git/trees");
+  def("git", "createCommit", "POST", "/repos/{owner}/{repo}/git/commits");
+  def("git", "updateRef", "PATCH", "/repos/{owner}/{repo}/git/refs/{ref}");
+
+  // Actions
+  def("actions", "listRepoWorkflows", "GET", "/repos/{owner}/{repo}/actions/workflows");
+  def("actions", "listWorkflowRuns", "GET", "/repos/{owner}/{repo}/actions/workflows/{workflow_id}/runs");
+
+  // Activity
+  def("activity", "listStargazersForRepo", "GET", "/repos/{owner}/{repo}/stargazers");
+
+  return rest;
+}
+
+// deno-lint-ignore no-explicit-any
+async function* paginateIterator<T>(
+  method: (params: Record<string, unknown>) => Promise<{ data: T[] }>,
+  params: Record<string, unknown>,
+): AsyncGenerator<{ data: T[] }> {
+  let url: string | null = null;
+  const baseParams: Record<string, unknown> = { ...params, per_page: params.per_page || 100, page: 1 };
+
+  while (true) {
+    let result: { data: T[]; headers: Headers };
+    if (url) {
+      const res = await ghRequest("GET", url);
+      result = { data: res.data as T[], headers: res.headers };
+    } else {
+      const page = (baseParams.page as number) || 1;
+      const res = await method({ ...baseParams, page });
+      // We need to get the response with headers. Since our rest methods return {data} only,
+      // we do a raw request to get headers for pagination.
+      let path = "";
+      // Reconstruct the URL from the params
+      const owner = baseParams.owner as string;
+      const repo = baseParams.repo as string;
+      if (method.name === "listWorkflowRuns" || String(method).includes("listWorkflowRuns")) {
+        path = `/repos/${owner}/${repo}/actions/workflows/${baseParams.workflow_id}/runs`;
+      } else if (String(method).includes("listStargazersForRepo")) {
+        path = `/repos/${owner}/${repo}/stargazers`;
+      } else if (String(method).includes("listComments")) {
+        path = `/repos/${owner}/${repo}/issues/${(baseParams as Record<string,unknown>).issue_number}/comments`;
+      } else if (String(method).includes("listReviewComments")) {
+        path = `/repos/${owner}/${repo}/pulls/${(baseParams as Record<string,unknown>).pull_number}/comments`;
+      } else {
+        // fallback: use the method itself
+        result = { data: (await method(baseParams)).data, headers: new Headers() };
+        yield result;
+        break;
+      }
+      const qs = new URLSearchParams();
+      for (const [k, v] of Object.entries(baseParams)) {
+        if (k !== "owner" && k !== "repo" && k !== "workflow_id" && k !== "issue_number" && k !== "pull_number" && v !== undefined) {
+          qs.append(k, String(v));
+        }
+      }
+      const fullUrl = qs.toString() ? `${GITHUB_API_BASE}${path}?${qs.toString()}` : `${GITHUB_API_BASE}${path}`;
+      const rawRes = await ghRequest("GET", fullUrl);
+      result = { data: rawRes.data as T[], headers: rawRes.headers };
+    }
+
+    yield { data: result.data };
+
+    // Check Link header for next page
+    const linkHeader = result.headers.get("link");
+    url = null;
+    if (linkHeader) {
+      const match = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+      if (match) {
+        url = match[1];
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+class GitHubAPI {
+  // deno-lint-ignore no-explicit-any
+  rest: Record<string, Record<string, (...args: any[]) => any>>;
+  paginate: {
+    iterator: <T>(
+      method: (params: Record<string, unknown>) => Promise<{ data: T[] }>,
+      params: Record<string, unknown>,
+    ) => AsyncGenerator<{ data: T[] }>;
+  };
+
+  constructor() {
+    this.rest = createRestClient();
+    this.paginate = {
+      iterator: paginateIterator,
+    };
+  }
+
+  async graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+    const { data } = await ghRequest("POST", "/graphql", { query, variables });
+    return data as T;
+  }
+}
+
+export const octokit = new GitHubAPI();
 
 export const vxDevPrefix = `[vx.dev]`;
 
