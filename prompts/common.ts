@@ -282,7 +282,7 @@ class GitHubAPI {
 
   async graphql<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
     const { data } = await ghRequest("POST", "/graphql", { query, variables });
-    return data as T;
+    return (data as { data: T }).data;
   }
 }
 
