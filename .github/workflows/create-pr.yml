@@ -28,8 +28,7 @@ jobs:
           {
             "imports": {
               "@octokit/rest": "npm:@octokit/rest@^21.0.0",
-              "openai": "npm:openai@^4.0.0",
-              "tsx": "npm:tsx@^4.0.0"
+              "openai": "npm:openai@^4.0.0"
             },
             "nodeModulesDir": "auto",
             "compilerOptions": {
@@ -46,4 +45,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: deno run -A --allow-env --allow-net --allow-read prompts/entry.ts
+        run: deno run -A prompts/entry.ts
