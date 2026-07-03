@@ -177,6 +177,7 @@ function createRestClient(): Record<string, Record<string, (...args: any[]) => a
   def("issues", "createComment", "POST", "/repos/{owner}/{repo}/issues/{issue_number}/comments");
 
   // Pulls
+  def("pulls", "list", "GET", "/repos/{owner}/{repo}/pulls");
   def("pulls", "create", "POST", "/repos/{owner}/{repo}/pulls");
   def("pulls", "get", "GET", "/repos/{owner}/{repo}/pulls/{pull_number}");
   def("pulls", "listReviewComments", "GET", "/repos/{owner}/{repo}/pulls/{pull_number}/comments");
