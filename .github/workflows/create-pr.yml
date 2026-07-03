@@ -22,44 +22,99 @@ jobs:
         with:
           deno-version: v2.x
       
-      - name: Create common.ts with exports
+      - name: Create common.ts with GitHub context
         run: |
           cat > prompts/common.ts << 'EOF'
+          // Lê o evento do GitHub do arquivo de contexto
           export function getIssueEvent() {
+            try {
+              // O GitHub Actions fornece o evento no arquivo GITHUB_EVENT_PATH
+              const eventPath = Deno.env.get('GITHUB_EVENT_PATH');
+              if (!eventPath) {
+                console.warn('GITHUB_EVENT_PATH não encontrado, usando dados mock');
+                return getMockEvent();
+              }
+              
+              const eventData = JSON.parse(Deno.readTextFileSync(eventPath));
+              console.log('Evento recebido:', JSON.stringify(eventData, null, 2));
+              
+              return eventData;
+            } catch (error) {
+              console.error('Erro ao ler evento:', error);
+              return getMockEvent();
+            }
+          }
+          
+          function getMockEvent() {
             return {
               action: 'created',
               issue: {
                 number: 1,
                 title: 'Test Issue',
-                body: 'Test body'
+                body: 'Test body',
+                user: { login: 'test-user' }
               },
               repository: {
                 name: 'vx.dev',
                 owner: { login: 'owner' }
-              }
-            };
-          }
-          
-          export function getComment() {
-            return {
+              },
               comment: {
                 body: 'Test comment',
-                user: { login: 'user' }
+                user: { login: 'test-user' }
               }
             };
           }
           
-          export function getPullRequest() {
+          // Função para extrair dados relevantes da issue
+          export function getIssueData(event: any) {
+            const issue = event.issue || event.pull_request || event.comment?.issue;
+            const repo = event.repository;
+            const comment = event.comment;
+            
             return {
-              pull_request: {
-                number: 1,
-                title: 'Test PR',
-                body: 'Test PR body'
-              }
+              issueNumber: issue?.number || 0,
+              issueTitle: issue?.title || '',
+              issueBody: issue?.body || '',
+              issueAuthor: issue?.user?.login || '',
+              repoName: repo?.name || '',
+              repoOwner: repo?.owner?.login || '',
+              commentBody: comment?.body || '',
+              commentAuthor: comment?.user?.login || '',
+              action: event.action || ''
             };
           }
           
-          // GitHub API helper usando fetch
+          // Função para criar PR com base na issue
+          export async function createPRFromIssue(token: string, issueData: any) {
+            const { repoOwner, repoName, issueNumber, issueTitle, issueBody } = issueData;
+            
+            // Busca o conteúdo da issue
+            const issueContent = await githubRequest(
+              `/repos/${repoOwner}/${repoName}/issues/${issueNumber}`,
+              token
+            );
+            
+            // Cria um branch baseado na issue
+            const branchName = `pr-from-issue-${issueNumber}`;
+            
+            // Cria o PR
+            const prData = {
+              title: `PR: ${issueTitle}`,
+              body: `Este PR resolve a issue #${issueNumber}\n\n${issueBody}`,
+              head: branchName,
+              base: 'main'
+            };
+            
+            return await githubRequest(
+              `/repos/${repoOwner}/${repoName}/pulls`,
+              token,
+              {
+                method: 'POST',
+                body: JSON.stringify(prData)
+              }
+            );
+          }
+          
           export async function githubRequest(endpoint: string, token: string, options: any = {}) {
             const response = await fetch(`https://api.github.com${endpoint}`, {
               ...options,
@@ -80,35 +135,74 @@ jobs:
           }
           EOF
       
-      - name: Create entry.ts with correct imports
+      - name: Create entry.ts with real issue data
         run: |
           cat > prompts/entry.ts << 'EOF'
-          import { getIssueEvent, githubRequest } from "./common.ts";
+          import { getIssueEvent, getIssueData, createPRFromIssue, githubRequest } from "./common.ts";
           
-          // Função principal
           async function main() {
             try {
-              console.log('Iniciando processo...');
+              console.log('🚀 Iniciando processo...');
               
-              // Obtém o evento
-              const eventData = getIssueEvent();
-              console.log('Evento obtido:', eventData);
+              // Obtém o evento real do GitHub
+              const event = getIssueEvent();
+              const issueData = getIssueData(event);
               
-              // Usa o helper do GitHub
-              if (Deno.env.get('GH_TOKEN')) {
-                const repos = await githubRequest('/user/repos', Deno.env.get('GH_TOKEN') || '');
-                console.log('Repositórios:', repos.length);
+              console.log('📋 Dados da Issue:', {
+                número: issueData.issueNumber,
+                título: issueData.issueTitle,
+                autor: issueData.issueAuthor,
+                repositório: `${issueData.repoOwner}/${issueData.repoName}`
+              });
+              
+              const token = Deno.env.get('GH_TOKEN');
+              if (!token) {
+                throw new Error('GH_TOKEN não configurado');
               }
               
-              // Lógica principal aqui
-              console.log('Processo concluído com sucesso!');
+              // Verifica se é uma issue ou comentário
+              if (event.issue || event.pull_request) {
+                console.log('📝 Processando issue/PR...');
+                
+                // Busca informações detalhadas da issue
+                const issueDetails = await githubRequest(
+                  `/repos/${issueData.repoOwner}/${issueData.repoName}/issues/${issueData.issueNumber}`,
+                  token
+                );
+                
+                console.log('📄 Detalhes da issue:', {
+                  título: issueDetails.title,
+                  estado: issueDetails.state,
+                  labels: issueDetails.labels?.map((l: any) => l.name) || []
+                });
+                
+                // Verifica se a issue tem label específica
+                const hasVxLabel = issueDetails.labels?.some((l: any) => l.name === 'vx.dev');
+                
+                if (hasVxLabel || event.action === 'labeled') {
+                  console.log('🏷️ Issue marcada para processamento!');
+                  
+                  // Cria o PR baseado na issue
+                  const pr = await createPRFromIssue(token, issueData);
+                  console.log('✅ PR criado com sucesso:', pr.html_url);
+                } else {
+                  console.log('⏭️ Issue não marcada com vx.dev, ignorando...');
+                }
+              } else if (event.comment) {
+                console.log('💬 Processando comentário...');
+                console.log('Comentário:', event.comment.body);
+                console.log('Autor:', event.comment.user.login);
+              } else {
+                console.log('ℹ️ Evento não identificado:', event.action);
+              }
+              
+              console.log('✅ Processo concluído!');
             } catch (error) {
-              console.error('Erro:', error.message);
+              console.error('❌ Erro:', error.message);
               Deno.exit(1);
             }
           }
           
-          // Executa a função principal
           await main();
           EOF
       
