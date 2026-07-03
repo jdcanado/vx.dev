@@ -143,7 +143,7 @@ async function main() {
   let { prompt } = result;
 
   const currentCode = await getCurrentCode(owner, repo, branch);
-  if (currentCode !== PLACEHOLDER_CODE) {
+  if (currentCode && currentCode !== PLACEHOLDER_CODE) {
     prompt += `
 Previously you already implemented the following code, use it as a reference and meet my new requirements:
 \`\`\`jsx

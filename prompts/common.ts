@@ -939,16 +939,24 @@ export async function getFileContent(
   branch: string,
   path: string
 ) {
-  const code = (
-    await octokit.rest.repos.getContent({
-      owner,
-      repo,
-      ref: branch,
-      path,
-    })
-  ).data;
+  try {
+    const code = (
+      await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        ref: branch,
+        path,
+      })
+    ).data;
 
-  if ("type" in code && code.type === "file") {
-    return atob(code.content);
+    if (code && typeof code === "object" && "type" in code && code.type === "file") {
+      return atob(code.content as string);
+    }
+  } catch (e) {
+    // Branch/arquivo não encontrado — retorna undefined
+    if (e instanceof Error && e.message.includes("404")) {
+      return undefined;
+    }
+    throw e;
   }
 }
