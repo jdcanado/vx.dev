@@ -17,19 +17,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
         with:
-          node-version: '22'
-          # Remove o cache ou especifique o caminho correto
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          deno-version: v2.x
       
-      - name: Install dependencies
+      - name: Create deno.json
         run: |
-          npm install @octokit/rest openai
-          # Gera o package-lock.json se não existir
-          npm install --package-lock-only
+          cat > deno.json << 'EOF'
+          {
+            "imports": {
+              "@octokit/rest": "npm:@octokit/rest@^21.0.0",
+              "openai": "npm:openai@^4.0.0",
+              "tsx": "npm:tsx@^4.0.0"
+            },
+            "nodeModulesDir": "auto",
+            "compilerOptions": {
+              "allowJs": true,
+              "checkJs": false
+            }
+          }
+          EOF
       
       - name: Generate UI
         env:
@@ -38,4 +46,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: npx tsx prompts/entry.ts
+        run: deno run -A --allow-env --allow-net --allow-read prompts/entry.ts
