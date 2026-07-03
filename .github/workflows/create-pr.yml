@@ -16,10 +16,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: 1.38.3
+          deno-version: v1.x  # Use latest stable
+      
+      - name: Create import map
+        run: |
+          cat > import_map.json << 'EOF'
+          {
+            "imports": {
+              "node:crypto": "https://deno.land/std@0.208.0/node/crypto.ts"
+            }
+          }
+          EOF
+      
       - name: generate UI
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -27,4 +39,5 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: deno run -A prompts/entry.ts
+        run: |
+          deno run -A --import-map=import_map.json --node-modules-dir --unstable prompts/entry.ts
