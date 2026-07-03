@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Button } from "@/components/ui/button";
 import ErrorBoundary from "./ErrorBoundary.jsx";
-import Preview from "./Preview.jsx";
-import previewStr from "./Preview.jsx?raw";
+import Preview from "./Preview.tsx";
+import previewStr from "./Preview.tsx?raw";
 import { getHighlighter, setCDN } from "shiki";
 
 export default function Home() {

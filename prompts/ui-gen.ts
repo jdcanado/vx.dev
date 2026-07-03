@@ -17,7 +17,7 @@ const systemPrompt = await Deno.readTextFile(join(__dirname, "./ui-gen.md"));
 
 const PLACEHOLDER_CODE = `export default function VxDev() { return <p>vx.dev placeholder</p>; }`;
 function getCurrentCode(owner: string, repo: string, branch: string) {
-  return getFileContent(owner, repo, branch, "preview-ui/src/Preview.jsx");
+  return getFileContent(owner, repo, branch, "preview-ui/src/Preview.tsx");
 }
 
 function mapImports(used: string[], declarations: Set<string>) {
@@ -135,7 +135,7 @@ function refineCode(code: string) {
 
 async function main() {
   const result = await composeWorkflow(uiGenLabel, {
-    "preview-ui/src/Preview.jsx": PLACEHOLDER_CODE,
+    "preview-ui/src/Preview.tsx": PLACEHOLDER_CODE,
   });
 
   if (!result) {
@@ -178,7 +178,7 @@ ${currentCode}
     issue.number,
     branch,
     {
-      "preview-ui/src/Preview.jsx": refineCode(code),
+      "preview-ui/src/Preview.tsx": refineCode(code),
     },
     `${vxDevPrefix} prompt:\r\n${commitMsg}`,
     [uiGenLabel]
