@@ -804,7 +804,7 @@ export const shadcnRules = [
     source: "@/components/ui/aspect-ratio",
   },
   {
-    matcher: "^Badge",
+    matcher: "^Badge$",
     source: "@/components/ui/badge",
   },
   {
@@ -844,7 +844,7 @@ export const shadcnRules = [
     source: "@/components/ui/toggle-group",
   },
   {
-    matcher: "^Toggle",
+    matcher: "^Toggle$",
     source: "@/components/ui/toggle",
   },
   {
@@ -924,7 +924,7 @@ export const shadcnRules = [
     source: "@/components/ui/popover",
   },
   {
-    matcher: "^Calendar",
+    matcher: "^Calendar$",
     source: "@/components/ui/calendar",
   },
   {
