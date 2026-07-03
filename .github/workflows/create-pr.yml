@@ -22,6 +22,17 @@ jobs:
         with:
           deno-version: v1.x
       
+      - name: Create import map for Node.js compatibility
+        run: |
+          cat > import_map.json << 'EOF'
+          {
+            "imports": {
+              "node:crypto": "https://deno.land/std@0.208.0/node/crypto.ts",
+              "universal-github-app-jwt": "https://esm.sh/universal-github-app-jwt@2.2.2"
+            }
+          }
+          EOF
+      
       - name: Generate UI
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -29,5 +40,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: |
-          deno run -A --node-modules-dir --unstable --allow-all prompts/entry.ts
+        run: deno run -A --import-map=import_map.json --node-modules-dir --unstable prompts/entry.ts
