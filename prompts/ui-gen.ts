@@ -1,7 +1,4 @@
 import { join } from "https://deno.land/std@0.188.0/path/mod.ts";
-import { parse, print, visit, types } from "npm:recast";
-import "npm:@babel/parser";
-import tsParser from "npm:recast/parsers/babel-ts.js";
 import {
   getCode,
   octokit,
@@ -75,81 +72,62 @@ function refineCode(code: string) {
   const usedVariables = new Set<string>();
   const declarations = new Set<string>();
 
-  const ast = parse(code, {
-    parser: tsParser,
-  });
+  // Extrai imports de 'react' e remove todos os outros imports
+  const reactImportRegex = /import\s*\{([^}]*)\}\s*from\s*['"]react['"]\s*;?/g;
+  let reactImportMatch;
+  while ((reactImportMatch = reactImportRegex.exec(code)) !== null) {
+    const specifiers = reactImportMatch[1]
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    for (const s of specifiers) {
+      // lida com { useState, useEffect } e { useState as foo }
+      const name = s.split(/\s+as\s+/)[0].trim();
+      fromReact.add(name);
+    }
+  }
 
-  visit(ast, {
-    visitImportDeclaration(p) {
-      const isReact =
-        p.node.source.type === "StringLiteral" &&
-        p.node.source.value === "react";
+  // Remove todos os imports que não são de 'react'
+  const nonReactImportRegex = /^import\s+(?:(?!['"]react['"]).)*?\s*;?\s*$/gm;
+  // Mas preserva os imports de 'react'
+  let cleanedCode = code;
+  // Remove non-react imports
+  cleanedCode = cleanedCode.replace(
+    /^import\s+(?!(?:type\s+)?[\w\s{},*]+\s+from\s+['"]react['"]).+$/gm,
+    ""
+  );
 
-      if (!isReact) {
-        p.replace();
-      } else {
-        for (const s of p.node.specifiers || []) {
-          fromReact.add(s.local?.name.toString() || "");
-        }
-      }
+  // Coleta declarações de função/variável
+  const funcDeclRegex = /(?:function|const)\s+(\w+)/g;
+  let fdMatch;
+  while ((fdMatch = funcDeclRegex.exec(cleanedCode)) !== null) {
+    declarations.add(fdMatch[1]);
+  }
 
-      this.traverse(p);
-    },
-  });
-
-  visit(ast, {
-    visitIdentifier(p) {
-      const varName = p.node.name;
-      const isDecl = ["VariableDeclarator", "FunctionDeclaration"].includes(
-        p.parent?.node.type
-      );
-
-      if (isDecl) {
-        declarations.add(varName);
-      }
-
-      // TODO: collect with a better strategy
-      // if (!fromReact.has(varName) && !isDecl) {
-      //   usedVariables.add(varName);
-      // }
-      this.traverse(p);
-    },
-    visitJSXIdentifier(p) {
-      const elName = p.node.name;
-      if (
-        p.parent?.node.type === "JSXOpeningElement" &&
-        elName[0].toUpperCase() === elName[0] &&
-        !fromReact.has(elName)
-      ) {
-        usedVariables.add(elName);
-      }
-      this.traverse(p);
-    },
-  });
+  // Coleta componentes JSX (tags que começam com maiúscula)
+  const jsxTagRegex = /<\/?([A-Z]\w*)/g;
+  let tagMatch;
+  while ((tagMatch = jsxTagRegex.exec(cleanedCode)) !== null) {
+    const elName = tagMatch[1];
+    if (!fromReact.has(elName)) {
+      usedVariables.add(elName);
+    }
+  }
 
   const { importStr, fallbacks } = mapImports(
     Array.from(usedVariables),
     declarations
   );
 
-  visit(ast, {
-    visitJSXIdentifier(p) {
-      const elName = p.node.name;
-      if (
-        ["JSXOpeningElement", "JSXClosingElement"].includes(
-          p.parent?.node.type
-        ) &&
-        elName[0].toUpperCase() === elName[0] &&
-        !fromReact.has(elName) &&
-        fallbacks.includes(elName)
-      ) {
-        p.replace(types.builders.jsxIdentifier("div"));
-      }
-      this.traverse(p);
-    },
-  });
+  // Substitui tags de componentes não encontrados (fallbacks) por <div>
+  for (const fb of fallbacks) {
+    cleanedCode = cleanedCode.replace(
+      new RegExp(`</?${fb}[^>]*>`, "g"),
+      (match) => match.replace(fb, "div")
+    );
+  }
 
-  return importStr + print(ast).code;
+  return importStr + cleanedCode;
 }
 
 async function main() {

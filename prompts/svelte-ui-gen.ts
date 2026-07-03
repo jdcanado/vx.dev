@@ -8,9 +8,6 @@ import {
   getFileContent,
 } from "./common.ts";
 import { join } from "https://deno.land/std@0.188.0/path/mod.ts";
-import { parse, print, visit } from "npm:recast";
-import "npm:@babel/parser";
-import tsParser from "npm:recast/parsers/babel-ts.js";
 
 const svelteUiGenLabel = `svelte-ui-gen`;
 
@@ -31,8 +28,8 @@ function getCurrentCode(owner: string, repo: string, branch: string) {
 }
 
 function refineCode(code: string) {
-  const regex = /<script>([\s\S]*?)<\/script>/;
-  const matches = code.match(regex);
+  const scriptRegex = /<script>([\s\S]*?)<\/script>/;
+  const matches = code.match(scriptRegex);
 
   if (!matches) {
     return code;
@@ -40,33 +37,23 @@ function refineCode(code: string) {
 
   const scriptContent = matches[1];
 
-  const ast = parse(scriptContent, {
-    parser: tsParser,
-  });
+  // Substitui `import { A, B } from '$lib/components/ui'` por imports individuais
+  const barrelImportRegex = /import\s*\{([^}]+)\}\s*from\s*['"]\$lib\/components\/ui['"]\s*;?/g;
+  let newScriptContent = scriptContent;
+  let extraImports = "";
 
-  let importStr = "";
+  const barrelMatch = barrelImportRegex.exec(scriptContent);
+  if (barrelMatch) {
+    const components = barrelMatch[1]
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
-  visit(ast, {
-    visitImportDeclaration(p) {
-      const isRootUi =
-        p.node.source.type === "StringLiteral" &&
-        p.node.source.value === "$lib/components/ui";
+    extraImports = mapShadcnImports(components).importStr;
+    newScriptContent = scriptContent.replace(barrelImportRegex, "");
+  }
 
-      if (isRootUi) {
-        const components = (p.node.specifiers || [])
-          .map((c) => c.local?.name.toString() || "")
-          .filter(Boolean);
-
-        importStr = mapShadcnImports(components).importStr;
-
-        p.replace();
-      }
-
-      this.traverse(p);
-    },
-  });
-
-  return code.replace(scriptContent, "\n" + importStr + print(ast).code);
+  return code.replace(scriptContent, "\n" + extraImports + newScriptContent);
 }
 
 function mapShadcnImports(used: string[]) {
