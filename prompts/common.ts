@@ -463,22 +463,46 @@ export async function applyPR(
     sha: newCommit.data.sha,
   });
 
+  // Busca PR existente via API REST (tempo real, sem delay de indexação)
   let pr = (
-    await octokit.rest.search.issuesAndPullRequests({
-      q: `is:open is:pr base:${baseBranch} head:${newBranch}+repo:${owner}/${repo}`,
+    await octokit.rest.pulls.list({
+      owner,
+      repo,
+      head: `${owner}:${newBranch}`,
+      base: baseBranch,
+      state: "open",
     })
-  ).data.items[0];
+  ).data[0];
+
   if (!pr) {
-    pr = (
-      await octokit.rest.pulls.create({
-        owner,
-        repo,
-        head: newBranch,
-        base: baseBranch,
-        title: `${vxDevPrefix} implements #${issueNumber}`,
-        body: `${vxDevPrefix} This PR implements #${issueNumber}, created by vx.dev.`,
-      })
-    ).data as any;
+    try {
+      pr = (
+        await octokit.rest.pulls.create({
+          owner,
+          repo,
+          head: newBranch,
+          base: baseBranch,
+          title: `${vxDevPrefix} implements #${issueNumber}`,
+          body: `${vxDevPrefix} This PR implements #${issueNumber}, created by vx.dev.`,
+        })
+      ).data;
+    } catch (e) {
+      // PR já existe (race condition) — busca novamente
+      if (e instanceof Error && e.message.includes("422")) {
+        pr = (
+          await octokit.rest.pulls.list({
+            owner,
+            repo,
+            head: `${owner}:${newBranch}`,
+            base: baseBranch,
+            state: "open",
+          })
+        ).data[0];
+        if (!pr) throw e;
+      } else {
+        throw e;
+      }
+    }
   }
 
   octokit.rest.issues.setLabels({
