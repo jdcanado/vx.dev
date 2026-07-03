@@ -1,13 +1,19 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Menu, Zap, Check, Clock } from 'lucide-react';
+import { ArrowRight, Menu, Zap, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-Below is the revised landing page for **Agenda AI** – a modern, conversion‑optimized, high‑fidelity React JSX prototype built with the provided component library. It includes a sticky navigation, interactive hero, social proof logos, feature cards with a built‑in analytics chart, step‑by‑step guide, testimonial carousel, pricing tables, FAQ accordion, and a full footer. The design leverages gradients, subtle shadows, and accessible interactions to boost engagement and trust.
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+Here's the complete, high‑fidelity landing page for **Agenda AI**, built with the provided component library. It’s fully responsive, conversion‑optimized, and ready to use as a static React prototype.
 
 ```jsx
 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 
@@ -19,21 +25,14 @@ Below is the revised landing page for **Agenda AI** – a modern, conversion‑o
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+} from "@/components/ui/card";
 
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@/components/ui/carousel';
-
+} from "@/components/ui/carousel";
 
   Dialog,
   DialogContent,
@@ -41,10 +40,15 @@ Below is the revised landing page for **Agenda AI** – a modern, conversion‑o
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
 
 
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
   ArrowRight,
   Check,
@@ -59,13 +63,13 @@ Below is the revised landing page for **Agenda AI** – a modern, conversion‑o
   Twitter,
   Github,
   Linkedin,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function AgendaAILanding() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-white dark:bg-slate-950 font-sans antialiased">
-        {/* Sticky Navigation */}
+        {/* ───── STICKY NAVIGATION ───── */}
         <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60 dark:bg-slate-950/80 dark:border-slate-800">
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
             <div className="flex items-center gap-2">
@@ -77,21 +81,11 @@ export default function AgendaAILanding() {
               </span>
             </div>
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
-              <a href="#features" className="hover:text-violet-600 transition-colors">
-                Features
-              </a>
-              <a href="#how-it-works" className="hover:text-violet-600 transition-colors">
-                How It Works
-              </a>
-              <a href="#testimonials" className="hover:text-violet-600 transition-colors">
-                Testimonials
-              </a>
-              <a href="#pricing" className="hover:text-violet-600 transition-colors">
-                Pricing
-              </a>
-              <a href="#faq" className="hover:text-violet-600 transition-colors">
-                FAQ
-              </a>
+              <a href="#features" className="hover:text-violet-600 transition-colors">Features</a>
+              <a href="#how-it-works" className="hover:text-violet-600 transition-colors">How It Works</a>
+              <a href="#testimonials" className="hover:text-violet-600 transition-colors">Testimonials</a>
+              <a href="#pricing" className="hover:text-violet-600 transition-colors">Pricing</a>
+              <a href="#faq" className="hover:text-violet-600 transition-colors">FAQ</a>
             </nav>
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
@@ -110,16 +104,13 @@ export default function AgendaAILanding() {
         </header>
 
         <main>
-          {/* Hero Section */}
+          {/* ───── HERO ───── */}
           <section className="relative overflow-hidden bg-gradient-to-b from-violet-50/50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
             <div className="container mx-auto px-4 md:px-6 py-20 md:py-32 relative z-10">
               <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-                <Badge
-                  variant="outline"
-                  className="mb-6 px-4 py-1.5 text-sm border-violet-200 text-violet-700 bg-violet-50 dark:border-violet-800 dark:text-violet-300 dark:bg-violet-950"
-                >
+                <Badge variant="outline" className="mb-6 px-4 py-1.5 text-sm border-violet-200 text-violet-700 bg-violet-50 dark:border-violet-800 dark:text-violet-300 dark:bg-violet-950">
                   <Zap className="mr-1.5 h-3.5 w-3.5" />
-                  AI-powered scheduling
+                  AI‑powered scheduling
                 </Badge>
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400 pb-2">
                   Never book a meeting manually again
@@ -129,7 +120,6 @@ export default function AgendaAILanding() {
                   schedules it automatically. Save <strong>10+ hours</strong> every week.
                 </p>
 
-                {/* CTA with email */}
                 <div className="mt-10 w-full max-w-md flex flex-col sm:flex-row gap-3">
                   <Input
                     type="email"
@@ -142,7 +132,7 @@ export default function AgendaAILanding() {
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <Check className="h-4 w-4 text-green-500" />
-                  Free 14-day trial
+                  Free 14‑day trial
                   <span className="text-slate-300 dark:text-slate-600">•</span>
                   <Check className="h-4 w-4 text-green-500" />
                   No credit card required
@@ -162,7 +152,7 @@ export default function AgendaAILanding() {
             </div>
           </section>
 
-          {/* Trusted By */}
+          {/* ───── TRUSTED BY ───── */}
           <section className="py-12 border-y bg-white dark:bg-slate-900">
             <div className="container mx-auto px-4 md:px-6">
               <p className="text-center text-sm font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase mb-8">
@@ -178,7 +168,7 @@ export default function AgendaAILanding() {
             </div>
           </section>
 
-          {/* Features Section */}
+          {/* ───── FEATURES ───── */}
           <section id="features" className="py-24 md:py-32 bg-white dark:bg-slate-950">
             <div className="container mx-auto px-4 md:px-6">
               <div className="text-center max-w-3xl mx-auto">
@@ -189,17 +179,30 @@ export default function AgendaAILanding() {
                   Powerful automation with a delightful interface.
                 </p>
               </div>
-
               <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {[
-                  {
-                    icon: <Zap className="h-6 w-6 text-violet-600" />,
-                    title: "AI Scheduling Engine",
-                    description:
-                      "Instantly finds the perfect slot considering time zones, preferences, and history.",
-                  },
-                  {
-                    icon: <Clock className="h-6 w-6 text-indigo-600" />,
-                    title: "Smart Time Blocking",
-                    description:
-                      "Protects your
+                {features.map((feature, idx) => (
+                  <Card key={idx} className="border-slate-100 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-950/50">
+                          {feature.icon}
+                        </div>
+                        <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
+                          {feature.title}
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ───── HOW IT WORKS ───── */}
+          <section id="how-it-works" className="py-24 md:py-32 bg-slate-50 dark:bg-slate-900">
+            <div className="container mx-auto px
