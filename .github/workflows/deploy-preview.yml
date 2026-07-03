@@ -49,8 +49,6 @@ jobs:
           echo "dir=$DIR" >> $GITHUB_OUTPUT
 
       - name: Build
-        env:
-          BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/
         run: |
           cd ${{ steps.build-dir.outputs.dir }}
           yarn install

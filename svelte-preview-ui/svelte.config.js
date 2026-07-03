@@ -10,7 +10,7 @@ const config = {
       fallback: 'index.html'
     }),
     paths: {
-      base: process.env.BASE_URL || "",
+      base: './',
     },
     alias: {
       $lib: "./src/lib"
