@@ -1,9 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
-import { CalendarDays } from '@/components/ui/calendar';
-import { Zap, Globe, Smartphone, Lock, Sparkles, Menu, Mail, ArrowRight, Check, Play, Clock, Star, Home, ChevronUp } from 'lucide-react';
+import { CalendarDays, Zap, Globe, Smartphone, Lock, Users, Sparkles, Sheet, Menu, Badge, Mail, ArrowRight, Check, Play, Clock, ArrowUpRight, Star, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
+import { SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,18 +17,18 @@ function StatsBarChart() {
     <div className="w-full h-80">
       <ResponsiveBar
         data={[
-          { metric: "Time Saved", before: 100, after: 35 },
-          { metric: "No-Shows", before: 80, after: 20 },
-          { metric: "Booking Time", before: 90, after: 10 },
-          { metric: "Satisfaction", before: 55, after: 95 },
+          { metric: 'Time Saved', before: 100, after: 35 },
+          { metric: 'No-Shows', before: 80, after: 20 },
+          { metric: 'Booking Time', before: 90, after: 10 },
+          { metric: 'Satisfaction', before: 55, after: 95 },
         ]}
-        keys={["before", "after"]}
+        keys={['before', 'after']}
         indexBy="metric"
         margin={{ top: 30, right: 40, bottom: 50, left: 50 }}
         padding={0.3}
-        valueScale={{ type: "linear" }}
-        indexScale={{ type: "band", round: true }}
-        colors={["#e2e8f0", "#7c3aed"]}
+        valueScale={{ type: 'linear' }}
+        indexScale={{ type: 'band', round: true }}
+        colors={['#e2e8f0', '#7c3aed']}
         borderWidth={0}
         borderRadius={4}
         enableLabel={false}
@@ -45,7 +43,7 @@ function StatsBarChart() {
           tickSize: 0,
           tickPadding: 8,
           tickRotation: 0,
-          legend: "Score",
+          legend: 'Score',
           legendOffset: -40,
         }}
         enableGridY={true}
@@ -53,7 +51,7 @@ function StatsBarChart() {
         theme={{
           grid: {
             line: {
-              stroke: "#f1f5f9",
+              stroke: '#f1f5f9',
               strokeWidth: 1,
             },
           },
@@ -61,236 +59,227 @@ function StatsBarChart() {
             ticks: {
               text: {
                 fontSize: 12,
-                fill: "#64748b",
+                fill: '#64748b',
               },
             },
           },
         }}
-        legends={[
-          {
-            dataFrom: "keys",
-            anchor: "top-right",
-            direction: "row",
-            justify: false,
-            translateX: 0,
-            translateY: -25,
-            itemsSpacing: 16,
-            itemWidth: 60,
-            itemHeight: 20,
-            itemDirection: "left-to-right",
-            itemOpacity: 1,
-            symbolSize: 12,
-            symbolShape: "circle",
-            symbolBorderRadius: 12,
-            itemTextColor: "#64748b",
-          },
-        ]}
       />
     </div>
   );
 }
 
 export default function AgendaAILanding() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState("");
-  const [activePricingTab, setActivePricingTab] = useState("monthly");
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [videoModalOpen, setVideoModalOpen] = React.useState(false);
+  const [emailInput, setEmailInput] = React.useState('');
+  const [activePricingTab, setActivePricingTab] = React.useState('monthly');
+  const [compareModalOpen, setCompareModalOpen] = React.useState(false);
+
+  const trustLogos = [
+    { name: 'Acme Corp', logoColor: 'text-gray-400' },
+    { name: 'TechNova', logoColor: 'text-gray-400' },
+    { name: 'FinScale', logoColor: 'text-gray-400' },
+    { name: 'DataFlow', logoColor: 'text-gray-400' },
+    { name: 'PixelCorp', logoColor: 'text-gray-400' },
+    { name: 'QuantumDev', logoColor: 'text-gray-400' },
+  ];
 
   const features = [
     {
       icon: <CalendarDays className="h-6 w-6 text-violet-600" />,
-      title: "Smart Scheduling",
+      title: 'Smart Scheduling',
       description:
-        "AI finds the perfect time for all participants, automatically respecting timezones and personal preferences.",
-      highlight: "90% faster",
-      bentoStyle: "md:col-span-2 md:row-span-2 bg-violet-50/50",
+        'AI finds the perfect time for all participants, respecting timezones and personal preferences.',
+      highlight: '90% faster',
+      bentoStyle: 'md:col-span-2 md:row-span-2 bg-violet-50/50',
     },
     {
       icon: <Zap className="h-6 w-6 text-violet-600" />,
-      title: "Instant Links",
+      title: 'Instant Links',
       description:
-        "One click generates a virtual room with video, shared notes and agenda – no endless email threads.",
-      highlight: "1-click setup",
-      bentoStyle: "",
+        'One click creates a virtual room with video, shared notes, and agenda.',
+      highlight: '1-click setup',
+      bentoStyle: '',
     },
     {
       icon: <Globe className="h-6 w-6 text-violet-600" />,
-      title: "Multi-Calendar Sync",
+      title: 'Multi-Calendar Sync',
       description:
-        "Connect Google, Outlook and Apple Calendar seamlessly. Zero scheduling conflicts, guaranteed.",
-      highlight: "3+ platforms",
-      bentoStyle: "md:col-span-1 md:row-span-2",
+        'Connect Google, Outlook and Apple Calendar seamlessly. Zero conflicts guaranteed.',
+      highlight: '3+ platforms',
+      bentoStyle: 'md:col-span-1 md:row-span-2',
     },
     {
       icon: <Smartphone className="h-6 w-6 text-violet-600" />,
-      title: "Mobile First",
+      title: 'Mobile First',
       description:
-        "Schedule, join and manage meetings on the go with our native iOS and Android apps.",
-      highlight: "iOS & Android",
-      bentoStyle: "",
+        'Schedule, join and manage meetings on the go with native iOS and Android apps.',
+      highlight: 'iOS & Android',
+      bentoStyle: '',
     },
     {
       icon: <Lock className="h-6 w-6 text-violet-600" />,
-      title: "Enterprise Security",
+      title: 'Enterprise Security',
       description:
-        "SOC 2 Type II certified, end-to-end encryption and SAML SSO keep your data safe and compliant.",
-      highlight: "SOC 2 certified",
-      bentoStyle: "md:col-span-2",
+        'SOC 2 Type II, end‑to‑end encryption, SAML SSO. Your data stays safe.',
+      highlight: 'SOC 2 certified',
+      bentoStyle: 'md:col-span-2',
     },
     {
-      icon: <div className="h-6 w-6 text-violet-600" />,
-      title: "Team Analytics",
+      icon: <Users className="h-6 w-6 text-violet-600" />,
+      title: 'Team Analytics',
       description:
-        "See how your team uses time and optimise meeting culture with actionable data-driven insights.",
-      highlight: "Real-time dashboards",
-      bentoStyle: "",
+        'See how your team uses time and optimise meeting culture with dashboards.',
+      highlight: 'Real‑time insights',
+      bentoStyle: '',
     },
   ];
 
   const steps = [
     {
-      number: "01",
-      title: "Connect Your Calendars",
+      number: '01',
+      title: 'Connect Your Calendars',
       description:
-        "Link Google, Outlook or Apple Calendar in two clicks. Agenda AI instantly learns your availability patterns.",
-      icon: <CalendarDays className="h-8 w-8 text-white" />,
-      color: "from-violet-500 to-purple-600",
+        'Link Google, Outlook or Apple Calendar in two clicks. AI instantly learns your availability.',
+      icon: <CalendarDays className="h-6 w-6 text-white" />,
+      color: 'from-violet-600 to-purple-600',
     },
     {
-      number: "02",
-      title: "Set Your Preferences",
+      number: '02',
+      title: 'Set Your Preferences',
       description:
-        "Define ideal hours, buffer intervals, favourite video platforms and even your personal productivity rhythms.",
-      icon: <Zap className="h-8 w-8 text-white" />,
-      color: "from-indigo-500 to-blue-600",
+        'Define ideal hours, buffer intervals, favourite video platforms and productivity rhythms.',
+      icon: <Zap className="h-6 w-6 text-white" />,
+      color: 'from-indigo-600 to-blue-600',
     },
     {
-      number: "03",
-      title: "Let AI Work",
+      number: '03',
+      title: 'Let AI Work',
       description:
-        'Simply type what you need – "Schedule a 30-minute catch-up with the design team next Tuesday afternoon." Done in seconds.',
-      icon: <Sparkles className="h-8 w-8 text-white" />,
-      color: "from-fuchsia-500 to-pink-600",
+        'Type what you need. "Schedule a 30‑min catch‑up with the design team next Tuesday afternoon." Done.',
+      icon: <Sparkles className="h-6 w-6 text-white" />,
+      color: 'from-fuchsia-600 to-pink-600',
     },
   ];
 
   const testimonials = [
     {
       quote:
-        "Agenda AI reduced my scheduling time by 90%. I now spend zero minutes playing calendar Tetris. It's genuinely liberating.",
-      name: "Sarah Chen",
-      role: "Product Lead, Acme Inc.",
+        'Agenda AI reduced my scheduling time by 90%. I now spend zero minutes playing calendar Tetris.',
+      name: 'Sarah Chen',
+      role: 'Product Lead at Acme Inc.',
       avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
       rating: 5,
     },
     {
       quote:
-        "Our sales team saved 12 hours a week since adopting Agenda AI. The CRM integration was flawless.",
-      name: "Carlos Mendez",
-      role: "Sales Director, TechNova",
+        'Our sales team saved 12 hours a week. The CRM integration was flawless.',
+      name: 'Carlos Mendez',
+      role: 'Sales Director at TechNova',
       avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
       rating: 5,
     },
     {
       quote:
-        "The analytics feature helped us identify useless meetings and reclaim 20% of our productive time.",
-      name: "Emily Park",
-      role: "COO, FinScale",
+        'The analytics feature helped us identify useless meetings and reclaim 20% of our productive time.',
+      name: 'Emily Park',
+      role: 'COO at FinScale',
       avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
       rating: 5,
     },
     {
       quote:
-        "I love how the AI adapts to my working patterns. It's like having a personal assistant who never sleeps.",
-      name: "James Wilson",
-      role: "Freelance Designer",
+        'I love how the AI adapts to my working patterns. It’s like having a personal assistant that never sleeps.',
+      name: 'James Wilson',
+      role: 'Freelance Designer',
       avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
       rating: 5,
     },
   ];
 
   const pricing = [
     {
-      name: "Starter",
+      name: 'Starter',
       priceMonthly: 8,
       priceAnnual: 6,
-      description: "For professionals who want to streamline personal scheduling.",
+      description: 'For professionals who want to streamline personal scheduling.',
       features: [
-        "1 connected calendar",
-        "Basic smart scheduling",
-        "Instant meeting links",
-        "Mobile app",
-        "Email support",
+        '1 connected calendar',
+        'Basic smart scheduling',
+        'Instant meeting links',
+        'Mobile app',
+        'Email support',
       ],
-      cta: "Start Free",
+      cta: 'Start Free',
       highlighted: false,
     },
     {
-      name: "Pro",
+      name: 'Pro',
       priceMonthly: 19,
       priceAnnual: 15,
-      description: "For teams that need advanced coordination and analytics.",
+      description: 'For teams that need advanced coordination and analytics.',
       features: [
-        "Unlimited calendars",
-        "Group scheduling",
-        "Team analytics",
-        "CRM & tool integrations",
-        "Priority support",
+        'Unlimited calendars',
+        'Group scheduling',
+        'Team analytics',
+        'CRM & tool integrations',
+        'Priority support',
       ],
-      cta: "Try Free",
+      cta: 'Try Free',
       highlighted: true,
     },
     {
-      name: "Enterprise",
+      name: 'Enterprise',
       priceMonthly: 49,
       priceAnnual: 39,
-      description: "For organizations requiring full security and control.",
+      description: 'For organizations requiring full security and control.',
       features: [
-        "Everything in Pro",
-        "SSO & SAML",
-        "Audit trail",
-        "Dedicated API",
-        "Customer success manager",
+        'Everything in Pro',
+        'SSO & SAML',
+        'Audit trail',
+        'Dedicated API',
+        'Customer success manager',
       ],
-      cta: "Talk to Sales",
+      cta: 'Talk to Sales',
       highlighted: false,
     },
   ];
 
   const faqs = [
     {
-      question: "Is there a free trial?",
+      question: 'Is there a free trial?',
       answer:
-        "Yes! All plans include a 14-day free trial with full access to features. No credit card required.",
+        'Yes! All plans include a 14‑day free trial with full access to features. No credit card required.',
     },
     {
-      question: "Can I integrate with my existing calendar?",
+      question: 'Can I integrate with my existing calendar?',
       answer:
-        "Absolutely. Agenda AI works with Google, Outlook, Apple Calendar and any CalDAV-compatible service.",
+        'Absolutely. Agenda AI works with Google, Outlook, Apple Calendar and any CalDAV‑compatible service.',
     },
     {
-      question: "How secure is my data?",
+      question: 'How secure is my data?',
       answer:
-        "We are SOC 2 Type II certified and use AES-256 encryption for data at rest and in transit. You can also bring your own SAML SSO.",
+        'We are SOC 2 Type II certified and use AES‑256 encryption for data at rest and in transit. You can also bring your own SAML SSO.',
     },
     {
-      question: "Can I cancel anytime?",
+      question: 'Can I cancel anytime?',
       answer:
-        "Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees.",
+        'Yes, you can cancel your subscription at any time. There are no long‑term contracts or cancellation fees.',
     },
     {
-      question: "What payment methods do you accept?",
+      question: 'What payment methods do you accept?',
       answer:
-        "We accept all major credit cards, PayPal and, for Enterprise plans, invoice-based payment.",
+        'We accept all major credit cards, PayPal and, for Enterprise plans, invoice‑based payment.',
     },
     {
-      question: "Do you offer a discount for nonprofits?",
+      question: 'Do you offer a discount for nonprofits?',
       answer:
-        "Yes, we provide special pricing for eligible nonprofit organisations. Contact sales for details.",
+        'Yes, we provide special pricing for eligible nonprofit organisations. Contact sales for details.',
     },
   ];
 
@@ -316,7 +305,9 @@ export default function AgendaAILanding() {
 
           <div className="hidden md:flex items-center gap-4">
             <Button variant="outline" className="border-violet-300 text-violet-700 hover:bg-violet-50">Log in</Button>
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white">Get Started</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+              Get Started Free
+            </Button>
           </div>
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -333,28 +324,31 @@ export default function AgendaAILanding() {
                 <a href="#pricing" className="text-lg font-medium text-gray-700 hover:text-violet-700" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
                 <a href="#faq" className="text-lg font-medium text-gray-700 hover:text-violet-700" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
                 <Button variant="outline" className="w-full mt-4">Log in</Button>
-                <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white">Get Started</Button>
+                <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white">Get Started Free</Button>
               </nav>
             </SheetContent>
           </Sheet>
         </div>
       </header>
 
-      {/* ========== Hero Section ========== */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-violet-600/5 to-indigo-600/5 pointer-events-none" />
+      {/* ========== Hero ========== */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-violet-50/30 to-white">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/clean-gray-paper.png')] opacity-40 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 lg:pt-32 lg:pb-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <Badge className="bg-violet-100 text-violet-700 border-violet-200 px-3 py-1 text-sm">
-                AI Scheduling
+              <Badge className="bg-violet-100 text-violet-700 border-violet-200 px-3 py-1 text-sm animate-pulse">
+                ⚡ Now with team analytics
               </Badge>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900">
-                Intelligent<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">scheduling</span> powered by AI
+                Never chase<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">
+                  meeting times
+                </span>{' '}
+                again
               </h1>
-              <p className="text-lg text-gray-600 max-w-lg">
-                Eliminate back-and-forth emails and find the perfect meeting time automatically. Connect your calendars and let AI do the heavy lifting.
+              <p className="text-lg text-gray-600 max-w-md">
+                AI‑powered scheduling that respects everyone’s time. Connect your calendar, set your preferences, and let Agenda AI handle the rest.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -362,20 +356,21 @@ export default function AgendaAILanding() {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     type="email"
-                    placeholder="Enter your best email"
-                    className="pl-10 h-12"
+                    placeholder="you@company.com"
+                    className="pl-10 h-12 border-violet-200 focus:border-violet-500"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                   />
                 </div>
-                <Button className="h-12 px-8 bg-violet-600 hover:bg-violet-700 text-white gap-2">
-                  Start Now <ArrowRight className="h-4 w-4" />
+                <Button className="h-12 px-8 bg-violet-600 hover:bg-violet-700 text-white gap-2 shadow-lg shadow-violet-200">
+                  Start Free Trial <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-500" /> 14-day free trial</span>
+                <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-500" /> 14‑day free trial</span>
                 <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-500" /> No credit card</span>
+                <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-500" /> Cancel anytime</span>
               </div>
 
               <div className="flex items-center gap-6 pt-4">
@@ -390,12 +385,11 @@ export default function AgendaAILanding() {
                   ))}
                 </div>
                 <div className="text-sm text-gray-600">
-                  <span className="font-semibold text-violet-700">2,500+ companies</span> already using it
+                  <span className="font-semibold text-violet-700">2,500+</span> companies already joined
                 </div>
               </div>
             </div>
 
-            {/* Hero visual */}
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-violet-200 bg-white">
                 <img
@@ -415,10 +409,9 @@ export default function AgendaAILanding() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[700px]">
                       <DialogHeader>
-                        <DialogTitle>See Agenda AI in action</DialogTitle>
+                        <DialogTitle>Agenda AI in 60 seconds</DialogTitle>
                       </DialogHeader>
                       <div className="aspect-video bg-black rounded-lg flex items-center justify-center">
-                        {/* Embedded video could be placed here; for static, a placeholder */}
                         <p className="text-white text-lg">Product demo video placeholder</p>
                       </div>
                     </DialogContent>
@@ -426,14 +419,14 @@ export default function AgendaAILanding() {
                 </div>
               </div>
               {/* Floating stats card */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 border border-gray-100">
+              <div className="absolute -bottom-8 -left-6 bg-white rounded-xl shadow-lg p-5 border border-gray-100">
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Clock className="h-4 w-4 text-violet-500" />
                   <span>Average booking time</span>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mt-1">24 sec</div>
+                <div className="text-3xl font-bold text-gray-900 mt-1">24 sec</div>
                 <div className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                  <ArrowRight className="h-3 w-3 rotate-180" /> 10x faster
+                  <ArrowUpRight className="h-3 w-3" /> 10x faster
                 </div>
               </div>
             </div>
@@ -441,16 +434,19 @@ export default function AgendaAILanding() {
         </div>
       </section>
 
-      {/* ========== Trusted by brands ========== */}
+      {/* ========== Trusted by ========== */}
       <section className="border-t border-b border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-4 py-8 flex items-center justify-center sm:justify-between flex-wrap gap-6">
-          <p className="text-sm text-gray-500">Trusted by innovative teams worldwide</p>
-          <div className="flex items-center gap-8 opacity-70">
-            <span className="text-xl font-bold text-gray-400">Acme</span>
-            <span className="text-xl font-bold text-gray-400">TechNova</span>
-            <span className="text-xl font-bold text-gray-400">FinScale</span>
-            <span className="text-xl font-bold text-gray-400">DataFlow</span>
-            <span className="text-xl font-bold text-gray-400">PixelCorp</span>
+          <p className="text-sm text-gray-500">Trusted by innovative teams</p>
+          <div className="flex items-center gap-8 opacity-70 flex-wrap justify-center">
+            {trustLogos.map((logo, idx) => (
+              <span
+                key={idx}
+                className={`text-xl font-bold ${logo.logoColor} tracking-wide`}
+              >
+                {logo.name}
+              </span>
+            ))}
           </div>
         </div>
       </section>
@@ -468,7 +464,7 @@ export default function AgendaAILanding() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             {features.map((feature, idx) => (
               <Card
                 key={idx}
@@ -541,7 +537,7 @@ export default function AgendaAILanding() {
             <CarouselContent>
               {testimonials.map((testimonial, idx) => (
                 <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
-                  <Card className="border border-gray-200 shadow-sm h-full">
+                  <Card className="border border-gray-200 shadow-sm h-full hover:shadow-md transition-shadow">
                     <CardContent className="p-6 flex flex-col justify-between h-full">
                       <div>
                         <div className="flex items-center gap-1 mb-3">
@@ -601,10 +597,6 @@ export default function AgendaAILanding() {
                   <p className="text-sm text-violet-200">active users</p>
                 </div>
               </div>
-              <div className="mt-8 flex items-center gap-2 text-sm text-violet-200">
-                <div value={78} className="w-40 h-2 bg-white/20" />
-                <span>78% fewer no-shows</span>
-              </div>
             </div>
             <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
               <StatsBarChart />
@@ -622,7 +614,7 @@ export default function AgendaAILanding() {
               Plans that grow with you
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              Choose the best plan for your team. All include a 14-day free trial.
+              Choose the best plan for your team. All include a 14‑day free trial.
             </p>
 
             <Tabs defaultValue="monthly" className="justify-center" onValueChange={setActivePricingTab}>
@@ -631,7 +623,7 @@ export default function AgendaAILanding() {
                   Monthly
                 </TabsTrigger>
                 <TabsTrigger value="annual" className="data-[state=active]:bg-white">
-                  Annual (-20%)
+                  Annual <span className="ml-1 text-xs text-green-600">(Save 20%)</span>
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -642,7 +634,9 @@ export default function AgendaAILanding() {
               <Card
                 key={idx}
                 className={`relative border ${
-                  plan.highlighted ? "border-violet-400 shadow-xl scale-105" : "border-gray-200"
+                  plan.highlighted
+                    ? 'border-violet-400 shadow-xl scale-105'
+                    : 'border-gray-200'
                 } transition-all`}
               >
                 {plan.highlighted && (
@@ -657,7 +651,7 @@ export default function AgendaAILanding() {
                 <CardContent>
                   <div className="mb-6">
                     <span className="text-4xl font-bold text-gray-900">
-                      R${activePricingTab === "monthly" ? plan.priceMonthly : plan.priceAnnual}
+                      $ {activePricingTab === 'monthly' ? plan.priceMonthly : plan.priceAnnual}
                     </span>
                     <span className="text-gray-500">/month</span>
                   </div>
@@ -672,10 +666,10 @@ export default function AgendaAILanding() {
                   <Button
                     className={`w-full ${
                       plan.highlighted
-                        ? "bg-violet-600 hover:bg-violet-700 text-white"
-                        : "border-violet-300 text-violet-700 hover:bg-violet-50"
+                        ? 'bg-violet-600 hover:bg-violet-700 text-white'
+                        : 'border-violet-300 text-violet-700 hover:bg-violet-50'
                     }`}
-                    variant={plan.highlighted ? "default" : "outline"}
+                    variant={plan.highlighted ? 'default' : 'outline'}
                   >
                     {plan.cta}
                   </Button>
@@ -683,7 +677,59 @@ export default function AgendaAILanding() {
               </Card>
             ))}
           </div>
+
+          <div className="mt-12 text-center">
+            <Button
+              variant="outline"
+              className="border-violet-300 text-violet-700 hover:bg-violet-50"
+              onClick={() => setCompareModalOpen(true)}
+            >
+              Compare all features
+            </Button>
+          </div>
         </div>
+
+        {/* Compare modal */}
+        <Dialog open={compareModalOpen} onOpenChange={setCompareModalOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Feature Comparison</DialogTitle>
+            </DialogHeader>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">Feature</th>
+                    <th className="text-center py-2">Starter</th>
+                    <th className="text-center py-2">Pro</th>
+                    <th className="text-center py-2">Enterprise</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    'Connected calendars',
+                    'Smart scheduling',
+                    'Instant links',
+                    'Mobile app',
+                    'Group scheduling',
+                    'Team analytics',
+                    'CRM integrations',
+                    'SSO & SAML',
+                    'Audit trail',
+                    'Dedicated API',
+                  ].map((feature, idx) => (
+                    <tr key={idx} className="border-b">
+                      <td className="py-2">{feature}</td>
+                      <td className="text-center">✔</td>
+                      <td className="text-center">✔</td>
+                      <td className="text-center">✔</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
 
       {/* ========== FAQ ========== */}
@@ -708,7 +754,7 @@ export default function AgendaAILanding() {
         </div>
       </section>
 
-      {/* ========== CTA Section ========== */}
+      {/* ========== CTA ========== */}
       <section className="py-20 bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -718,7 +764,10 @@ export default function AgendaAILanding() {
             Join 10,000+ professionals who have transformed the way they schedule meetings.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
-            <Input placeholder="your@email.com" className="h-12 bg-white text-gray-900 placeholder:text-gray-500" />
+            <Input
+              placeholder="your@email.com"
+              className="h-12 bg-white text-gray-900 placeholder:text-gray-500"
+            />
             <Button className="h-12 px-8 bg-white text-violet-700 hover:bg-violet-50 font-semibold">
               Start for free
             </Button>
@@ -740,16 +789,22 @@ export default function AgendaAILanding() {
               </div>
               <p className="text-sm">Smart scheduling that respects your time.</p>
               <div className="flex gap-4 mt-4">
-                <a href="#" className="hover:text-white transition-colors"><div className="w-5 h-5" /></a>
-                <a href="#" className="hover:text-white transition-colors"><div className="w-5 h-5" /></a>
-                <a href="#" className="hover:text-white transition-colors"><div className="w-5 h-5" /></a>
+                <a href="#" className="hover:text-white transition-colors" aria-label="Twitter">
+                  <svg className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+                </a>
+                <a href="#" className="hover:text-white transition-colors" aria-label="GitHub">
+                  <svg className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 .5C5.4.5 0 5.9 0 12.5c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.3-1.6-1.3-1.6-1.1-.7.1-.7.1-.7.5.1.9 1 .9 1 .8 1.4 2.2 1 2.8.8.1-.6.3-1 .6-1.2-2.2-.2-4.5-1.1-4.5-4.8 0-1.1.4-2 1-2.7-.1-.2-.4-1.3.1-2.6 0 0 .8-.2 2.7 1a9.3 9.3 0 014.9 0c1.9-1.2 2.7-1 2.7-1 .5 1.3.2 2.4.1 2.6.6.7 1 1.6 1 2.7 0 3.7-2.3 4.6-4.5 4.8.4.3.7.9.7 1.8v2.7c0 .2.2.5.8.6 4.8-1.6 8.2-6.1 8.2-11.4C24 5.9 18.6.5 12 .5z"/></svg>
+                </a>
+                <a href="#" className="hover:text-white transition-colors" aria-label="LinkedIn">
+                  <svg className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zm-1.5-10.3A1.7 1.7 0 114.8 7a1.7 1.7 0 011.7 1.7zM19 19h-3v-4.9c0-1.2-.4-2-1.5-2s-1.7.9-1.7 2V19h-3v-9h2.9v1.2c.5-.9 1.6-1.4 2.7-1.4 2.5 0 3.6 1.6 3.6 4.2V19z"/></svg>
+                </a>
               </div>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">API</a></li>
               </ul>
@@ -770,6 +825,9 @@ export default function AgendaAILanding() {
                 <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
               </ul>
+              <Button className="mt-4 text-xs h-8 bg-violet-600 hover:bg-violet-700 text-white">
+                Request a demo
+              </Button>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center">
@@ -778,7 +836,7 @@ export default function AgendaAILanding() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors mt-4 sm:mt-0"
                     aria-label="Back to top"
                   >
