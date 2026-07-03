@@ -1,7 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsiveLine } from '@nivo/line';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Gift, X, CalendarDays, Badge, LogIn, ArrowRight, Menu, Sparkles, Users, Check, Clock, Shield, Zap, Home, ChevronRight, TrendingUp, Calendar, Star } from 'lucide-react';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Gift, X, CalendarDays, Badge, LogIn, ArrowRight, Menu, Sparkles, Users, Check, ChevronRight, Clock, Calendar, Home, TrendingUp, Star, Shield, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -137,6 +137,7 @@ export default function AgendaAILandingRevised() {
   const [avgDuration, setAvgDuration] = React.useState(45);
   const [isAnnual, setIsAnnual] = React.useState(false);
   const [showOffer, setShowOffer] = React.useState(true);
+  const [demoOpen, setDemoOpen] = React.useState(false);
 
   const yearlySavings = (meetingsPerWeek * avgDuration * 0.3) / 60;
   const yearlyCost = isAnnual ? 90 : 12 * 15;
@@ -146,11 +147,10 @@ export default function AgendaAILandingRevised() {
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
         {/* ---- Sticky CTA Banner (urgency) ---- */}
         {showOffer && (
-          <div className="bg-indigo-600 text-white py-2 px-4 flex items-center justify-center gap-3 text-sm font-medium relative">
+          <div className="bg-indigo-600 text-white py-3 px-4 flex items-center justify-center gap-3 text-sm font-medium relative">
             <Gift className="h-4 w-4" />
             <span>
-              🎉 Limited-time offer: Get 50% off your first year when you
-              upgrade today! Use code <strong>SAVE50</strong>
+              🎉 <strong>Limited-time offer:</strong> Get 50% off your first year when you upgrade today! Use code <strong>SAVE50</strong>
             </span>
             <Button
               variant="link"
@@ -170,8 +170,8 @@ export default function AgendaAILandingRevised() {
           </div>
         )}
 
-        {/* ---- Header/Navbar ---- */}
-        <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 border-b border-slate-200/50 shadow-sm">
+        {/* ---- Header/Navbar with glass effect and micro-interactions ---- */}
+        <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200/50 shadow-sm transition-all duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-2">
@@ -179,23 +179,21 @@ export default function AgendaAILandingRevised() {
                 <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Agenda AI
                 </span>
-                <Badge
-                  variant="outline"
-                  className="ml-2 text-xs font-medium border-indigo-200 text-indigo-600"
-                >
+                <Badge variant="outline" className="ml-2 text-xs font-medium border-indigo-200 text-indigo-600">
                   Beta
                 </Badge>
               </div>
 
               <nav className="hidden md:flex items-center space-x-1">
-                {['Features', 'How It Works', 'Testimonials', 'Pricing'].map(
+                {['Features', 'How It Works', 'Testimonials', 'Pricing', 'FAQ'].map(
                   (item) => (
                     <a
                       key={item}
                       href={`#${item.toLowerCase().replace(/ /g, '-')}`}
-                      className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors"
+                      className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors relative group"
                     >
                       {item}
+                      <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-indigo-600 group-hover:w-full transition-all duration-300" />
                     </a>
                   )
                 )}
@@ -204,29 +202,31 @@ export default function AgendaAILandingRevised() {
               <div className="hidden md:flex items-center gap-3">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-2">
+                    <Button variant="ghost" size="sm" className="gap-2 hover:bg-indigo-50">
                       <LogIn className="h-4 w-4" />
                       Sign In
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Welcome back</DialogTitle>
                       <DialogDescription>
                         Sign in to your Agenda AI account.
                       </DialogDescription>
                     </DialogHeader>
-                    <Input placeholder="Email" className="mb-2" />
-                    <Input type="password" placeholder="Password" className="mb-4" />
-                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
-                      Sign In
-                    </Button>
+                    <div className="space-y-4 py-4">
+                      <Input placeholder="Email" />
+                      <Input type="password" placeholder="Password" />
+                      <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                        Sign In
+                      </Button>
+                    </div>
                   </DialogContent>
                 </Dialog>
 
                 <Button
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-md shadow-indigo-200"
+                  className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-md shadow-indigo-200 transition-all hover:scale-105"
                   onClick={() => alert('Redirecting to signup...')}
                 >
                   Get Started Free
@@ -252,9 +252,9 @@ export default function AgendaAILandingRevised() {
           </div>
 
           {mobileMenuOpen && (
-            <div className="md:hidden bg-white border-t border-slate-200">
+            <div className="md:hidden bg-white border-t border-slate-200 animate-in slide-in-from-top-2">
               <div className="px-4 py-3 space-y-2">
-                {['Features', 'How It Works', 'Testimonials', 'Pricing'].map(
+                {['Features', 'How It Works', 'Testimonials', 'Pricing', 'FAQ'].map(
                   (item) => (
                     <a
                       key={item}
@@ -284,23 +284,21 @@ export default function AgendaAILandingRevised() {
           )}
         </header>
 
-        {/* ---- Hero Section ---- */}
+        {/* ---- Hero Section with motion, social proof, and interactive demo entry ---- */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50" />
           <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
           <div className="absolute bottom-10 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000" />
+          <div className="absolute top-1/3 left-1/3 w-10 h-10 bg-indigo-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-float" />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
             <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
               <div className="mb-10 lg:mb-0">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 flex items-center gap-1">
+                  <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 flex items-center gap-1 animate-pulse">
                     <Sparkles className="h-3 w-3" /> Limited Offer – 50% off
                   </Badge>
-                  <Badge
-                    variant="outline"
-                    className="text-slate-600 border-slate-300"
-                  >
+                  <Badge variant="outline" className="text-slate-600 border-slate-300">
                     <Users className="h-3 w-3 mr-1" /> Join 15,000+ users
                   </Badge>
                 </div>
@@ -323,17 +321,17 @@ export default function AgendaAILandingRevised() {
                       placeholder="Enter your work email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12"
+                      className="pl-10 h-12 border-indigo-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 transition-all"
                     />
-                    <Users className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+                    <Users className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
                   </div>
                   <Button
                     size="lg"
-                    className="bg-indigo-600 hover:bg-indigo-700 h-12 gap-2 shadow-lg shadow-indigo-200"
+                    className="bg-indigo-600 hover:bg-indigo-700 h-12 gap-2 shadow-lg shadow-indigo-200 group transition-all hover:scale-105"
                     onClick={() => alert('Starting free trial...')}
                   >
                     Start Free Trial
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
 
@@ -359,11 +357,24 @@ export default function AgendaAILandingRevised() {
                     <strong>200+</strong> signups today
                   </span>
                 </div>
+
+                {/* Quick Demo CTA */}
+                <div className="mt-6">
+                  <Button
+                    variant="outline"
+                    className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 gap-2 group"
+                    onClick={() => setDemoOpen(true)}
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                    See a live demo
+                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Dashboard mockup */}
+              {/* Dashboard mockup with floating card */}
               <div className="relative">
-                <div className="rounded-2xl shadow-2xl bg-white border border-slate-200 p-4 sm:p-6 backdrop-blur-sm">
+                <div className="rounded-2xl shadow-2xl bg-white/90 backdrop-blur-sm border border-slate-200 p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex gap-2">
                       <div className="w-3 h-3 rounded-full bg-red-400" />
@@ -377,7 +388,9 @@ export default function AgendaAILandingRevised() {
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <Card className="bg-indigo-50 border-indigo-100">
                       <CardContent className="p-4 flex items-center gap-3">
-                        <CalendarDays className="h-8 w-8 text-indigo-600" />
+                        <div className="p-2 bg-indigo-100 rounded-lg">
+                          <CalendarDays className="h-6 w-6 text-indigo-600" />
+                        </div>
                         <div>
                           <p className="text-2xl font-bold text-indigo-900">
                             12
@@ -390,7 +403,9 @@ export default function AgendaAILandingRevised() {
                     </Card>
                     <Card className="bg-purple-50 border-purple-100">
                       <CardContent className="p-4 flex items-center gap-3">
-                        <Clock className="h-8 w-8 text-purple-600" />
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <Clock className="h-6 w-6 text-purple-600" />
+                        </div>
                         <div>
                           <p className="text-2xl font-bold text-purple-900">
                             8.5h
@@ -407,12 +422,12 @@ export default function AgendaAILandingRevised() {
                       (item, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
+                          className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-indigo-50 transition-colors cursor-pointer group"
                         >
                           <Checkbox id={`meeting-${idx}`} defaultChecked />
                           <Label
                             htmlFor={`meeting-${idx}`}
-                            className="text-sm font-medium"
+                            className="text-sm font-medium group-hover:text-indigo-600"
                           >
                             {item}
                           </Label>
@@ -423,12 +438,13 @@ export default function AgendaAILandingRevised() {
                               ? '11:00 AM'
                               : '2:00 PM'}
                           </span>
+                          <ChevronRight className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       )
                     )}
                   </div>
                 </div>
-                {/* Floating element */}
+                {/* Floating element with bounce animation */}
                 <div className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-lg p-3 flex items-center gap-3 border border-slate-200 animate-bounce">
                   <Avatar>
                     <AvatarImage src="https://github.com/Yuyz0112.png" />
@@ -447,7 +463,56 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Social Proof Bar + Trust Badges ---- */}
+        {/* ---- Dialogue for Quick Demo ---- */}
+        <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Quick Demo – Pick a Date</DialogTitle>
+              <DialogDescription>
+                See how Agenda AI recommends time slots for you.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center gap-4">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border"
+              />
+              <div className="w-full">
+                <h4 className="text-sm font-medium mb-2">
+                  Available Slots for{' '}
+                  {date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </h4>
+                <div className="space-y-2">
+                  {['9:00 AM', '10:15 AM', '1:30 PM', '3:45 PM'].map(
+                    (slot, idx) => (
+                      <Button
+                        key={idx}
+                        variant="outline"
+                        className="w-full justify-between group hover:bg-indigo-50 hover:border-indigo-300"
+                        onClick={() => alert(`Slot ${slot} selected!`)}
+                      >
+                        <span className="font-mono text-indigo-700">
+                          {slot}
+                        </span>
+                        <span className="text-sm text-green-600 flex items-center">
+                          <Check className="h-3 w-3 mr-1" /> Optimal
+                        </span>
+                      </Button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* ---- Social Proof Bar + Trust Badges with animated logos ---- */}
         <section className="py-12 border-y border-slate-200 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-medium text-slate-500 mb-8">
@@ -458,7 +523,7 @@ export default function AgendaAILandingRevised() {
                 (company) => (
                   <div
                     key={company}
-                    className="text-xl font-bold text-slate-400"
+                    className="text-xl font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-default"
                   >
                     {company}
                   </div>
@@ -466,29 +531,27 @@ export default function AgendaAILandingRevised() {
               )}
             </div>
             <div className="flex flex-wrap justify-center gap-4 mt-8">
-              <Badge
-                variant="outline"
-                className="bg-slate-50 text-slate-600 border-slate-200"
-              >
-                <Shield className="h-3 w-3 mr-1" /> SOC 2 Type II
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-slate-50 text-slate-600 border-slate-200"
-              >
-                <Zap className="h-3 w-3 mr-1" /> GDPR Compliant
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-slate-50 text-slate-600 border-slate-200"
-              >
-                <Shield className="h-3 w-3 mr-1" /> 256-bit Encryption
-              </Badge>
+              {[
+                { icon: Shield, text: 'SOC 2 Type II' },
+                { icon: Globe, text: 'GDPR Compliant' },
+                { icon: Lock, text: '256-bit Encryption' },
+              ].map((badge) => (
+                <Tooltip key={badge.text}>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 cursor-help hover:bg-indigo-50">
+                      <badge.icon className="h-3 w-3 mr-1" /> {badge.text}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>We take security seriously</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ---- Stats Section with animated counter effect (static representation) ---- */}
+        {/* ---- Stats Section with animated progress and visual appeal ---- */}
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -500,27 +563,27 @@ export default function AgendaAILandingRevised() {
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all hover:-translate-y-1 group"
                 >
                   <p className="text-3xl sm:text-4xl font-extrabold text-indigo-600">
                     {stat.number}
                   </p>
-                  <p className="mt-1 text-slate-600 text-sm">{stat.label}</p>
+                  <p className="mt-1 text-slate-600 text-sm font-medium">{stat.label}</p>
                   <p className="text-xs text-slate-400 mt-1">{stat.detail}</p>
+                  <div className="mt-3 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-400 rounded-full w-0 group-hover:w-full transition-all duration-700" />
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ---- Features with Tabs ---- */}
+        {/* ---- Features with Tabs – modern card design with icons ---- */}
         <section id="features" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-indigo-600 border-indigo-200"
-              >
+              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 <Sparkles className="h-3 w-3 mr-1" /> Powerful Features
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
@@ -533,7 +596,7 @@ export default function AgendaAILandingRevised() {
             </div>
 
             <Tabs defaultValue="SmartScheduling" className="w-full">
-              <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-2 md:grid-cols-3 gap-2">
+              <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-2 md:grid-cols-3 gap-2 mb-12">
                 {[
                   { id: 'SmartScheduling', label: 'Smart Scheduling' },
                   { id: 'ConflictResolution', label: 'Conflict Resolution' },
@@ -542,16 +605,16 @@ export default function AgendaAILandingRevised() {
                   { id: 'TeamCoordination', label: 'Team Coord.' },
                   { id: 'CustomReminders', label: 'Custom Reminders' },
                 ].map(({ id, label }) => (
-                  <TabsTrigger key={id} value={id}>
+                  <TabsTrigger key={id} value={id} className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
                     {label}
                   </TabsTrigger>
                 ))}
               </TabsList>
               {Object.entries(featureIcons).map(([key, Icon]) => (
                 <TabsContent key={key} value={key}>
-                  <Card className="border-slate-200 hover:shadow-lg transition-shadow">
+                  <Card className="border-slate-200 hover:shadow-lg transition-all hover:-translate-y-1 overflow-hidden">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center mb-4">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center mb-4">
                         <div className="h-6 w-6 text-indigo-600" />
                       </div>
                       <CardTitle className="text-xl">
@@ -578,7 +641,7 @@ export default function AgendaAILandingRevised() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-2"
+                        className="gap-2 hover:bg-indigo-50 hover:text-indigo-600"
                         onClick={() => alert('Explore more features')}
                       >
                         Learn more <ChevronRight className="h-4 w-4" />
@@ -591,7 +654,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Time Savings Calculator ---- */}
+        {/* ---- Time Savings Calculator with enhanced interactivity ---- */}
         <section className="py-20 bg-white border-t border-slate-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
@@ -606,10 +669,10 @@ export default function AgendaAILandingRevised() {
                 you every week.
               </p>
             </div>
-            <div className="space-y-8">
+            <div className="space-y-8 p-6 bg-slate-50 rounded-2xl">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Meetings per week: {meetingsPerWeek}
+                  Meetings per week: <span className="font-bold">{meetingsPerWeek}</span>
                 </label>
                 <Slider
                   value={[meetingsPerWeek]}
@@ -622,7 +685,7 @@ export default function AgendaAILandingRevised() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Average meeting length (minutes): {avgDuration}
+                  Average meeting length (minutes): <span className="font-bold">{avgDuration}</span>
                 </label>
                 <Slider
                   value={[avgDuration]}
@@ -642,12 +705,8 @@ export default function AgendaAILandingRevised() {
                     <p className="text-3xl font-extrabold text-indigo-600">
                       {yearlySavings.toFixed(1)} hours
                     </p>
-                    <div
-                      value={Math.min(100, yearlySavings * 10)}
-                      className="mt-2 h-1.5 bg-indigo-200"
-                    />
+                    <div value={Math.min(100, yearlySavings * 10)} className="mt-2 h-1.5" />
                   </div>
-                  <div
                   <TrendingUp className="h-12 w-12 text-indigo-400" />
                 </CardContent>
               </Card>
@@ -658,7 +717,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Interactive AI Demo with Calendar ---- */}
+        {/* ---- Interactive AI Demo with Calendar and time slots ---- */}
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -681,7 +740,7 @@ export default function AgendaAILandingRevised() {
                   className="rounded-md border shadow"
                 />
               </div>
-              <div>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
                 <h3 className="text-xl font-semibold mb-4">
                   Available Slots for{' '}
                   {date.toLocaleDateString('en-US', {
@@ -696,7 +755,7 @@ export default function AgendaAILandingRevised() {
                       <Button
                         key={idx}
                         variant="outline"
-                        className="w-full justify-between group hover:bg-indigo-50 hover:border-indigo-300"
+                        className="w-full justify-between group hover:bg-indigo-50 hover:border-indigo-300 transition-all"
                         onClick={() => alert(`Slot ${slot} selected!`)}
                       >
                         <span className="font-mono text-indigo-700">
@@ -750,14 +809,11 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- How It Works ---- */}
+        {/* ---- How It Works with animated step indicators ---- */}
         <section id="how-it-works" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-indigo-600 border-indigo-200"
-              >
+              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 Simple Process
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
@@ -772,21 +828,27 @@ export default function AgendaAILandingRevised() {
                   title: 'Connect Calendars',
                   description:
                     'Link Google, Outlook, or Apple Calendar in one click.',
+                  icon: CalendarDays,
                 },
                 {
                   step: '02',
                   title: 'Set Your Preferences',
                   description:
                     'Define your working hours, meeting buffers, and priorities.',
+                  icon: Clock,
                 },
                 {
                   step: '03',
                   title: 'Let AI Do the Rest',
                   description:
                     'Agenda AI automatically schedules meetings and keeps your day optimized.',
+                  icon: Zap,
                 },
               ].map((step, idx) => (
-                <div key={idx} className="relative text-center">
+                <div key={idx} className="relative text-center group">
+                  <div className="mb-4 inline-flex p-4 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-colors">
+                    <step.icon className="h-8 w-8" />
+                  </div>
                   <div className="text-5xl font-bold text-indigo-100 mb-4">
                     {step.step}
                   </div>
@@ -795,7 +857,7 @@ export default function AgendaAILandingRevised() {
                   </h3>
                   <p className="mt-2 text-slate-600">{step.description}</p>
                   {idx < 2 && (
-                    <div className="hidden md:block absolute top-10 -right-4 text-slate-300">
+                    <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-slate-300">
                       <ChevronRight className="h-8 w-8" />
                     </div>
                   )}
@@ -805,14 +867,11 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Testimonials Carousel ---- */}
+        {/* ---- Testimonials Carousel with enhanced cards ---- */}
         <section id="testimonials" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-indigo-600 border-indigo-200"
-              >
+              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 Testimonials
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
@@ -860,7 +919,7 @@ export default function AgendaAILandingRevised() {
                     className="md:basis-1/2 lg:basis-1/3"
                   >
                     <div className="p-1">
-                      <Card className="border-slate-200 h-full">
+                      <Card className="border-slate-200 h-full hover:shadow-md transition-all hover:-translate-y-1">
                         <CardContent className="pt-6">
                           <div className="flex items-center gap-1 mb-3">
                             {[...Array(5)].map((_, i) => (
@@ -906,7 +965,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Pricing ---- */}
+        {/* ---- Pricing with enhanced visual and toggle ---- */}
         <section id="pricing" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -1003,7 +1062,7 @@ export default function AgendaAILandingRevised() {
                     plan.popular
                       ? 'border-indigo-500 shadow-lg scale-105 z-10'
                       : ''
-                  }`}
+                  } transition-all hover:-translate-y-1`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -1063,14 +1122,11 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- FAQ ---- */}
-        <section className="py-20 bg-white">
+        {/* ---- FAQ with animated accordion ---- */}
+        <section id="faq" className="py-20 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-indigo-600 border-indigo-200"
-              >
+              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 FAQ
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
@@ -1105,47 +1161,47 @@ export default function AgendaAILandingRevised() {
                     'Yes! All paid plans come with a 30-day money-back guarantee. If you’re not satisfied, contact us for a full refund.',
                 },
               ].map((faq, idx) => (
-                <AccordionItem key={idx} value={`item-${idx + 1}`}>
-                  <AccordionTrigger className="text-left">
+                <AccordionItem key={idx} value={`item-${idx + 1}`} className="border-b border-slate-200">
+                  <AccordionTrigger className="text-left hover:text-indigo-600 transition-colors">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
+                  <AccordionContent className="text-slate-600">{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
           </div>
         </section>
 
-        {/* ---- Final CTA with urgency ---- */}
+        {/* ---- Final CTA with powerful conversion techniques ---- */}
         <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl" />
-            <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300 rounded-full mix-blend-overlay filter blur-3xl" />
+            <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-pulse" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300 rounded-full mix-blend-overlay filter blur-3xl animate-pulse animation-delay-2000" />
           </div>
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <Badge className="mb-4 bg-white/20 text-white border-none">
               LIMITED TIME OFFER
             </Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
               Ready to reclaim your time?
             </h2>
-            <p className="mt-4 text-lg text-indigo-100">
+            <p className="mt-4 text-lg text-indigo-100 max-w-2xl mx-auto">
               Join 15,000+ professionals who already use Agenda AI to automate
               their scheduling. Start your free trial today.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
               <Button
                 size="lg"
-                className="bg-white text-indigo-600 hover:bg-slate-100 gap-2 shadow-xl"
+                className="bg-white text-indigo-600 hover:bg-slate-100 gap-2 shadow-xl group transition-all hover:scale-105"
                 onClick={() => alert('Starting free trial!')}
               >
                 Start Free Trial
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white text-white hover:bg-white/10"
+                className="border-white text-white hover:bg-white/10 transition-all hover:scale-105"
                 onClick={() => alert('Redirecting to sales')}
               >
                 Talk to sales
@@ -1156,13 +1212,24 @@ export default function AgendaAILandingRevised() {
               No credit card required · 14-day free trial · 30-day money-back
               guarantee
             </p>
-            <p className="mt-2 text-xs text-indigo-300">
+            <div className="mt-3 text-xs text-indigo-300">
               Use code <strong>SAVE50</strong> for 50% off your first year.
-            </p>
+            </div>
+            <div className="mt-8 flex items-center justify-center gap-6 text-xs text-indigo-200">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4" /> 99.9% uptime SLA
+              </div>
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4" /> SOC2 Type II certified
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" /> 24/7 support
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* ---- Footer ---- */}
+        {/* ---- Footer with enhanced layout ---- */}
         <footer className="bg-slate-900 text-slate-300 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
@@ -1246,19 +1313,24 @@ export default function AgendaAILandingRevised() {
                 <h4 className="text-sm font-semibold text-white mb-3">
                   Stay Updated
                 </h4>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  />
-                  <Button
-                    size="sm"
-                    className="bg-indigo-600 hover:bg-indigo-700"
-                    onClick={() => alert('Subscribed!')}
-                  >
-                    Subscribe
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                    />
+                    <Button
+                      size="sm"
+                      className="bg-indigo-600 hover:bg-indigo-700"
+                      onClick={() => alert('Subscribed!')}
+                    >
+                      Subscribe
+                    </Button>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Get product updates and AI tips.
+                  </p>
                 </div>
               </div>
             </div>
