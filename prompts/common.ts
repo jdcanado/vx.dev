@@ -123,19 +123,24 @@ function createRestClient(): Record<string, Record<string, (...args: any[]) => a
 
   const def = (ns: string, method: string, httpMethod: string, pathTemplate: string) => {
     if (!rest[ns]) rest[ns] = {};
+    // Extrai os placeholders do template (ex: {owner}, {repo}, {path})
+    const pathPlaceholders = new Set(
+      [...pathTemplate.matchAll(/\{(\w+)\}/g)].map((m) => m[1])
+    );
     rest[ns][method] = async (params: Record<string, unknown>) => {
       let path = pathTemplate;
-      // replace {owner}, {repo}, {ref}, {issue_number}, {pull_number}, {commit_sha}, {workflow_id}
-      for (const [k, v] of Object.entries(params)) {
+      // Substitui placeholders no path
+      for (const k of pathPlaceholders) {
+        const v = params[k];
         if (typeof v === "string" || typeof v === "number") {
           path = path.replace(`{${k}}`, String(v));
         }
       }
-      // query params go on the URL, body goes as body
+      // Parâmetros que não são placeholders viram query params (GET) ou body
       const queryParams = new URLSearchParams();
       const bodyParams: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(params)) {
-        if (path.includes(`{${k}}`)) continue;
+        if (pathPlaceholders.has(k)) continue;
         if (httpMethod === "GET" || httpMethod === "HEAD") {
           if (v !== undefined && v !== null) queryParams.append(k, String(v));
         } else {
@@ -146,14 +151,7 @@ function createRestClient(): Record<string, Record<string, (...args: any[]) => a
           }
         }
       }
-      let qs = queryParams.toString();
-      // Special handling for search/actions endpoints that use query string for GET
-      if (httpMethod === "GET" && Object.keys(bodyParams).length > 0) {
-        for (const [k, v] of Object.entries(bodyParams)) {
-          if (v !== undefined && v !== null) queryParams.append(k, String(v));
-        }
-        qs = queryParams.toString();
-      }
+      const qs = queryParams.toString();
       const fullPath = qs ? `${path}?${qs}` : path;
       const body = httpMethod !== "GET" && Object.keys(bodyParams).length > 0 ? bodyParams : undefined;
       const { data } = await ghRequest(httpMethod, fullPath, body);
