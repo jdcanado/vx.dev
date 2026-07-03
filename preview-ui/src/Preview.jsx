@@ -1,216 +1,170 @@
+import { ResponsiveBar } from '@nivo/bar';
 import { CalendarDays } from '@/components/ui/calendar';
 import { Zap, Globe, Smartphone, Lock, Home, Sparkles } from 'lucide-react';
-import { useState } from "react";
 
 
-
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-
-
-
-
-  ArrowRight,
-  Check,
-  Star,
-  Play,
-  Twitter,
-  Github,
-  Linkedin,
-  Menu,
-  CalendarDays,
-  Globe,
-  Smartphone,
-  Lock,
-  Zap,
-  Sparkles,
-  Clock,
-  Shield,
-  Users,
-} from "lucide-react";
+function StatsBarChart(props) {
+  return (
+    <div {...props}>
+      <ResponsiveBar
+        data={[
+          { metric: "Time Saved", before: 100, after: 35 },
+          { metric: "No-Shows", before: 80, after: 20 },
+          { metric: "Booking Time", before: 90, after: 10 },
+          { metric: "Team Satisfaction", before: 55, after: 95 },
+        ]}
+        keys={["before", "after"]}
+        indexBy="metric"
+        margin={{ top: 30, right: 40, bottom: 50, left: 50 }}
+        padding={0.3}
+        valueScale={{ type: "linear" }}
+        indexScale={{ type: "band", round: true }}
+        colors={["#e2e8f0", "#7c3aed"]}
+        borderWidth={0}
+        borderRadius={4}
+        enableLabel={false}
+        axisTop={null}
+        axisRight={null}
+        axisBottom={{
+          tickSize: 0,
+          tickPadding: 10,
+          tickRotation: 0,
+          legend: "",
+          legendOffset: 36,
+        }}
+        axisLeft={{
+          tickSize: 0,
+          tickPadding: 8,
+          tickRotation: 0,
+          legend: "Score",
+          legendOffset: -40,
+        }}
+        enableGridY={true}
+        gridYValues={[0, 25, 50, 75, 100]}
+        theme={{
+          grid: {
+            line: {
+              stroke: "#f1f5f9",
+              strokeWidth: 1,
+            },
+          },
+          axis: {
+            ticks: {
+              text: {
+                fontSize: 12,
+                fill: "#64748b",
+              },
+            },
+          },
+        }}
+        legends={[
+          {
+            dataFrom: "keys",
+            anchor: "top-right",
+            direction: "row",
+            justify: false,
+            translateX: 0,
+            translateY: -25,
+            itemsSpacing: 16,
+            itemWidth: 60,
+            itemHeight: 20,
+            itemDirection: "left-to-right",
+            itemOpacity: 1,
+            symbolSize: 12,
+            symbolShape: "circle",
+            symbolBorderRadius: 12,
+            itemTextColor: "#64748b",
+          },
+        ]}
+      />
+    </div>
+  );
+}
 
 export default function AgendaAILanding() {
-  const [videoOpen, setVideoOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [activePricingTab, setActivePricingTab] = useState("monthly");
 
   const features = [
     {
       icon: <CalendarDays className="h-6 w-6 text-violet-600" />,
       title: "Smart Scheduling",
       description:
-        "AI finds the perfect time for every participant, respecting time zones and personal preferences.",
+        "AI finds the perfect time for every participant, respecting time zones and personal preferences automatically.",
+      highlight: "90% faster booking",
     },
     {
       icon: <Zap className="h-6 w-6 text-violet-600" />,
       title: "Instant Meeting Links",
       description:
-        "One click generates a virtual room with video, notes, and agenda – no more back-and-forth emails.",
+        "One click generates a virtual room with video, shared notes, and agenda — no more back-and-forth emails.",
+      highlight: "1-click setup",
     },
     {
       icon: <Globe className="h-6 w-6 text-violet-600" />,
       title: "Multi‑Calendar Sync",
       description:
-        "Connect Google, Outlook, and Apple calendars seamlessly. No double bookings, ever.",
+        "Connect Google, Outlook, and Apple calendars seamlessly. Zero double bookings, guaranteed.",
+      highlight: "3+ platforms",
     },
     {
       icon: <Smartphone className="h-6 w-6 text-violet-600" />,
-      title: "Mobile App",
+      title: "Mobile First",
       description:
-        "Schedule, join, and manage meetings on the go with our fully native iOS & Android apps.",
+        "Schedule, join, and manage meetings on the go with our fully native iOS and Android apps.",
+      highlight: "iOS & Android",
     },
     {
       icon: <Lock className="h-6 w-6 text-violet-600" />,
       title: "Enterprise Security",
       description:
-        "SOC 2 Type II certified, end‑to‑end encryption, and SAML SSO keep your data safe.",
+        "SOC 2 Type II certified, end‑to‑end encryption, and SAML SSO keep your data safe and compliant.",
+      highlight: "SOC 2 certified",
     },
     {
       icon: <div className="h-6 w-6 text-violet-600" />,
       title: "Team Analytics",
       description:
-        "See how your team spends its time and optimize meeting culture with actionable insights.",
+        "See how your team spends time and optimize meeting culture with actionable, data-driven insights.",
+      highlight: "Real-time dashboards",
     },
   ];
 
   const steps = [
     {
-      number: "1",
-      title: "Connect your calendars",
+      number: "01",
+      title: "Connect Your Calendars",
       description:
-        "Link your Google, Outlook, or Apple calendar in two clicks. Agenda AI instantly learns your availability.",
+        "Link your Google, Outlook, or Apple calendar in two clicks. Agenda AI instantly learns your availability patterns.",
       icon: <CalendarDays className="h-8 w-8 text-white" />,
+      color: "from-violet-500 to-purple-600",
     },
     {
-      number: "2",
-      title: "Set your preferences",
+      number: "02",
+      title: "Set Your Preferences",
       description:
-        "Define your ideal meeting times, buffer zones, and even your favorite video platforms.",
+        "Define ideal meeting times, buffer zones, favorite video platforms, and even your personal productivity rhythms.",
       icon: <Zap className="h-8 w-8 text-white" />,
+      color: "from-indigo-500 to-blue-600",
     },
     {
-      number: "3",
-      title: "Let AI do the work",
+      number: "03",
+      title: "Let AI Do the Work",
       description:
-        "Type what you need – 'Schedule a 30‑min call with the design team next week'. Done.",
+        'Simply type what you need — "Schedule a 30‑min call with the design team next Tuesday afternoon." Done in seconds.',
       icon: <Sparkles className="h-8 w-8 text-white" />,
+      color: "from-fuchsia-500 to-pink-600",
     },
   ];
 
   const testimonials = [
     {
       quote:
-        "Agenda AI cut my scheduling time by 90%. I now spend zero minutes playing calendar Tetris.",
+        "Agenda AI cut my scheduling time by 90%. I now spend zero minutes playing calendar Tetris. It's genuinely liberating.",
       name: "Sarah Chen",
       role: "Product Lead, Acme Inc.",
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+      rating: 5,
     },
-    {
-      quote:
-        "Our sales team reduced no‑shows by 45% after switching. It’s a game changer.",
-      name: "Marcus Rivera",
-      role: "VP Sales, Orbital",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    },
-    {
-      quote:
-        "Finally, a scheduling tool that respects my time. The AI suggestions are eerily accurate.",
-      name: "Priya Patel",
-      role: "CEO, Lumina Health",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    },
-    {
-      quote:
-        "We onboarded 200+ employees in one week. No training needed – it just works.",
-      name: "David Kim",
-      role: "IT Director, Skyward",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    },
-  ];
-
-  const plans = [
-    {
-      name: "Starter",
-      price: "Free",
-      description: "Perfect for individuals",
-      features: [
-        "Up to 10 meetings/month",
-        "1 calendar connection",
-        "Basic AI scheduling",
-        "Email support",
-      ],
-      cta: "Get started",
-      popular: false,
-    },
-    {
-      name: "Pro",
-      price: "$12",
-      period: "/month",
-      description: "For power users & small teams",
-      features: [
-        "Unlimited meetings",
-        "Unlimited calendars",
-        "Priority AI & analytics",
-        "Custom booking links",
-        "Video integrations",
-      ],
-      cta: "Start free trial",
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      description: "For large organizations",
-      features: [
-        "Everything in Pro",
-        "SSO & SAML",
-        "Dedicated support",
-        "Custom AI policies",
-        "SLA guarantee",
-        "Advanced admin controls",
-      ],
-      cta: "Contact sales",
-      popular: false,
-    },
-  ];
-
-  const faqs = [
-    {
-      question: "How does the AI find the best time?",
-      answer:
-        "Our AI analyzes all participants’ calendars, time zones, and preferences to propose slots with the highest chance of acceptance. It learns from past meetings as well.",
-    },
-    {
-      question: "Is my data secure?",
-      answer:
