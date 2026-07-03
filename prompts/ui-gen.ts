@@ -160,24 +160,12 @@ ${currentCode}
       },
       {
         role: "user",
-        content: [
-          {
-            type: "text",
-            text: prompt,
-          },
-          ...images.map(
-            (image) =>
-              ({
-                type: "image_url",
-                image_url: {
-                  url: image,
-                },
-              } as const)
-          ),
-        ],
+        content: prompt + (images.length > 0
+          ? "\n\nReference images:\n" + images.map((url: string, i: number) => `[Image ${i + 1}](${url})`).join("\n")
+          : ""),
       },
     ],
-    "gpt-4o"
+    "deepseek-v4-pro"
   );
   console.log(JSON.stringify(usage, null, 2));
 

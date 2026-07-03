@@ -6,17 +6,14 @@ import {
 } from "https://deno.land/x/openai@v4.20.1/resources/mod.ts";
 import { assert } from "https://deno.land/std@0.201.0/assert/assert.ts";
 import { ChatCompletionCreateParamsBase } from "https://deno.land/x/openai@v4.20.1/resources/chat/completions.ts";
-import { fromMarkdown } from "https://esm.sh/mdast-util-from-markdown@2.0.0";
-import { visitParents } from "https://esm.sh/unist-util-visit-parents@6.0.1";
-import { toMarkdown } from "https://esm.sh/mdast-util-to-markdown@2.1.0";
-import { remove } from "https://esm.sh/unist-util-remove@4.0.0";
 import { checkValid } from "./quota.ts";
 
-const apiKey = Deno.env.get("OPENAI_API_KEY");
-assert(apiKey, "failed to get openAI API key");
+const apiKey = Deno.env.get("DEEPSEEK_API_KEY") || Deno.env.get("OPENAI_API_KEY");
+assert(apiKey, "failed to get DeepSeek API key (set DEEPSEEK_API_KEY)");
 
 const openai = new OpenAI({
   apiKey: apiKey,
+  baseURL: "https://api.deepseek.com/v1",
 });
 
 export async function getCode(
@@ -40,26 +37,30 @@ export async function getCode(
         temperature: 0,
       });
 
-      console.log("raw output> ", chatCompletion.choices[0].message.content);
+      const rawContent = chatCompletion.choices[0].message.content || "";
+      console.log("raw output> ", rawContent);
 
+      // Extrai blocos de código markdown com regex
+      const codeBlockRegex = /```[\w]*\n([\s\S]*?)```/g;
       const codeBlocks: string[] = [];
-      const tree = fromMarkdown(
-        chatCompletion.choices[0].message.content || ""
-      );
-      // deno-lint-ignore no-explicit-any
-      visitParents(tree, "code", (node: any) => {
-        codeBlocks.push(node.value.trim());
-      });
+      let match;
+      while ((match = codeBlockRegex.exec(rawContent)) !== null) {
+        codeBlocks.push(match[1].trim());
+      }
 
       if (codeBlocks.length !== 1) {
         throw new Error(`invalid code blocks ${JSON.stringify(codeBlocks)}`);
       }
 
-      remove(tree, "code");
+      // Remove o bloco de código do markdown para obter a descrição
+      const description = rawContent
+        .replace(/```[\w]*\n[\s\S]*?```/g, "")
+        .trim();
+
       return {
         code: codeBlocks[0],
         usage: chatCompletion.usage,
-        description: toMarkdown(tree),
+        description,
       };
     },
     { delay: 100, maxTry: 3 }
