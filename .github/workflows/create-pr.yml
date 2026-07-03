@@ -27,11 +27,15 @@ jobs:
           cat > deno.json << 'EOF'
           {
             "imports": {
-              "@octokit/rest": "npm:@octokit/rest@19.0.13",
-              "@octokit/core": "npm:@octokit/core@4.2.4",
+              "@octokit/rest": "npm:@octokit/rest@20.1.1",
+              "@octokit/core": "npm:@octokit/core@5.2.0",
+              "octokit-commit-multiple-files": "npm:octokit-commit-multiple-files@6.0.3",
               "openai": "npm:openai@4.28.0"
             },
-            "nodeModulesDir": "auto"
+            "nodeModulesDir": "auto",
+            "overrides": {
+              "@octokit/rest": "npm:@octokit/rest@20.1.1"
+            }
           }
           EOF
       
