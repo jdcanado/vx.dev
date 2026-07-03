@@ -16,16 +16,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
       
-      - name: Create common.ts (versão original corrigida)
+      - name: Create common.ts with branch creation
         run: |
           cat > prompts/common.ts << 'EOF'
-          // Função para obter o evento do GitHub
           export function getIssueEvent() {
             try {
               const eventPath = Deno.env.get('GITHUB_EVENT_PATH');
@@ -33,9 +34,8 @@ jobs:
                 console.warn('GITHUB_EVENT_PATH não encontrado');
                 return null;
               }
-              
               const eventData = JSON.parse(Deno.readTextFileSync(eventPath));
-              console.log('✅ Evento carregado com sucesso');
+              console.log('✅ Evento carregado');
               return eventData;
             } catch (error) {
               console.error('❌ Erro ao ler evento:', error);
@@ -43,20 +43,11 @@ jobs:
             }
           }
           
-          // Função para extrair dados da issue
           export function getIssueData(event: any) {
             if (!event) return null;
-            
-            // Obtém a issue (pode vir de issue, pull_request, ou do comentário)
             const issue = event.issue || event.pull_request;
             const repo = event.repository;
             const comment = event.comment;
-            
-            // Log para debug
-            console.log('📋 Dados extraídos:');
-            console.log(`  - Issue: ${issue?.number || 'N/A'}`);
-            console.log(`  - Repo: ${repo?.full_name || 'N/A'}`);
-            console.log(`  - Comment: ${comment?.user?.login || 'N/A'}`);
             
             return {
               issueNumber: issue?.number || 0,
@@ -73,9 +64,10 @@ jobs:
             };
           }
           
-          // Função para fazer requisições à API do GitHub
           export async function githubRequest(endpoint: string, token: string, options: any = {}) {
             const url = `https://api.github.com${endpoint}`;
+            console.log(`🌐 ${options.method || 'GET'} ${url}`);
+            
             const response = await fetch(url, {
               ...options,
               headers: {
@@ -86,46 +78,85 @@ jobs:
               }
             });
             
+            const data = await response.json();
             if (!response.ok) {
-              const error = await response.text();
-              throw new Error(`GitHub API error ${response.status}: ${error}`);
+              console.error('❌ Erro:', data);
+              throw new Error(`GitHub API error ${response.status}: ${JSON.stringify(data)}`);
             }
             
-            return response.json();
+            return data;
           }
           
-          // Função para criar PR a partir da issue
-          export async function createPRFromIssue(token: string, issueData: any) {
-            const { repoOwner, repoName, issueNumber, issueTitle, issueBody } = issueData;
+          // Função para criar branch
+          export async function createBranch(token: string, repoOwner: string, repoName: string, branchName: string, baseBranch: string = 'main') {
+            console.log(`🌿 Criando branch ${branchName} a partir de ${baseBranch}`);
             
-            // Busca o conteúdo da issue para obter mais detalhes
-            const issueContent = await githubRequest(
-              `/repos/${repoOwner}/${repoName}/issues/${issueNumber}`,
+            // Obtém o SHA do branch base
+            const baseRef = await githubRequest(
+              `/repos/${repoOwner}/${repoName}/git/ref/heads/${baseBranch}`,
               token
             );
             
-            // Nome do branch baseado na issue
-            const branchName = `pr-from-issue-${issueNumber}`;
+            const sha = baseRef.object.sha;
+            console.log(`📌 SHA do branch base: ${sha}`);
             
-            const prData = {
-              title: `PR: ${issueTitle}`,
-              body: `Resolve a issue #${issueNumber}\n\n${issueBody}\n\n---\n\nGerado automaticamente pelo vx.dev`,
-              head: branchName,
-              base: 'main'
-            };
-            
-            return await githubRequest(
-              `/repos/${repoOwner}/${repoName}/pulls`,
+            // Cria o novo branch
+            const newRef = await githubRequest(
+              `/repos/${repoOwner}/${repoName}/git/refs`,
               token,
               {
                 method: 'POST',
-                body: JSON.stringify(prData)
+                body: JSON.stringify({
+                  ref: `refs/heads/${branchName}`,
+                  sha: sha
+                })
               }
             );
+            
+            console.log(`✅ Branch ${branchName} criado com sucesso!`);
+            return newRef;
+          }
+          
+          // Função para criar PR
+          export async function createPRFromIssue(token: string, issueData: any) {
+            const { repoOwner, repoName, issueNumber, issueTitle, issueBody } = issueData;
+            
+            const branchName = `vx-dev/issue-${issueNumber}`;
+            const baseBranch = 'main'; // Altere para o branch padrão do seu repositório
+            
+            try {
+              // 1. Primeiro, cria o branch
+              await createBranch(token, repoOwner, repoName, branchName, baseBranch);
+              
+              // 2. Agora cria o PR
+              console.log(`📝 Criando PR de ${branchName} para ${baseBranch}`);
+              const prData = {
+                title: `PR: ${issueTitle}`,
+                body: `Resolve a issue #${issueNumber}\n\n${issueBody}\n\n---\n\n🤖 Gerado automaticamente pelo vx.dev`,
+                head: branchName,
+                base: baseBranch,
+                draft: false
+              };
+              
+              const pr = await githubRequest(
+                `/repos/${repoOwner}/${repoName}/pulls`,
+                token,
+                {
+                  method: 'POST',
+                  body: JSON.stringify(prData)
+                }
+              );
+              
+              console.log(`✅ PR #${pr.number} criado: ${pr.html_url}`);
+              return pr;
+            } catch (error) {
+              console.error('❌ Erro ao criar PR:', error.message);
+              throw error;
+            }
           }
           EOF
       
-      - name: Create entry.ts (versão original)
+      - name: Create entry.ts
         run: |
           cat > prompts/entry.ts << 'EOF'
           import { getIssueEvent, getIssueData, createPRFromIssue, githubRequest } from "./common.ts";
@@ -134,7 +165,6 @@ jobs:
             try {
               console.log('🚀 vx.dev iniciado');
               
-              // Obtém o evento
               const event = getIssueEvent();
               if (!event) {
                 console.log('❌ Nenhum evento encontrado');
@@ -143,7 +173,7 @@ jobs:
               
               const issueData = getIssueData(event);
               if (!issueData || issueData.issueNumber === 0) {
-                console.log('❌ Nenhuma issue encontrada no evento');
+                console.log('❌ Nenhuma issue encontrada');
                 Deno.exit(1);
               }
               
@@ -153,47 +183,52 @@ jobs:
                 Deno.exit(1);
               }
               
-              console.log(`📝 Processando issue #${issueData.issueNumber}: ${issueData.issueTitle}`);
+              console.log(`📝 Issue #${issueData.issueNumber}: ${issueData.issueTitle}`);
               console.log(`📂 Repositório: ${issueData.repoOwner}/${issueData.repoName}`);
               console.log(`🏷️ Labels: ${issueData.labels.map((l: any) => l.name).join(', ') || 'nenhuma'}`);
-              console.log(`🎯 Ação: ${issueData.action}`);
               
-              // Verifica se a issue tem a label vx.dev ou se foi recém marcada
+              // Verifica condições para processar
               if (issueData.isLabeled || issueData.action === 'labeled') {
-                console.log('✅ Issue marcada com vx.dev, processando...');
+                console.log('✅ Label vx.dev detectada, processando...');
                 
-                const pr = await createPRFromIssue(token, issueData);
-                console.log('✅ PR criado com sucesso!');
-                console.log(`🔗 URL: ${pr.html_url}`);
-                console.log(`📝 Número: #${pr.number}`);
-              } else if (issueData.commentBody?.includes('[vx.dev]')) {
-                console.log('✅ Comando [vx.dev] detectado no comentário, processando...');
-                
-                // Adiciona a label vx.dev à issue
-                await githubRequest(
-                  `/repos/${issueData.repoOwner}/${issueData.repoName}/issues/${issueData.issueNumber}/labels`,
-                  token,
-                  {
-                    method: 'POST',
-                    body: JSON.stringify(['vx.dev'])
-                  }
-                );
-                console.log('🏷️ Label vx.dev adicionada à issue');
-                
-                const pr = await createPRFromIssue(token, issueData);
-                console.log('✅ PR criado com sucesso!');
-                console.log(`🔗 URL: ${pr.html_url}`);
-                console.log(`📝 Número: #${pr.number}`);
+                try {
+                  const pr = await createPRFromIssue(token, issueData);
+                  console.log('🎉 PR criado com sucesso!');
+                  
+                  // Comenta na issue com o link do PR
+                  await githubRequest(
+                    `/repos/${issueData.repoOwner}/${issueData.repoName}/issues/${issueData.issueNumber}/comments`,
+                    token,
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        body: `✅ PR criado com sucesso: ${pr.html_url}\n\nNúmero: #${pr.number}`
+                      })
+                    }
+                  );
+                  
+                } catch (error) {
+                  console.error('❌ Falha ao criar PR:', error.message);
+                  // Comenta o erro na issue
+                  await githubRequest(
+                    `/repos/${issueData.repoOwner}/${issueData.repoName}/issues/${issueData.issueNumber}/comments`,
+                    token,
+                    {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        body: `❌ Erro ao criar PR: ${error.message}`
+                      })
+                    }
+                  );
+                  Deno.exit(1);
+                }
               } else {
                 console.log('⏭️ Nenhuma condição atendida, ignorando...');
-                console.log('💡 Para ativar:');
-                console.log('  - Adicione a label "vx.dev" à issue');
-                console.log('  - Ou comente "[vx.dev]" na issue');
               }
               
               console.log('✅ Processo concluído');
             } catch (error) {
-              console.error('❌ Erro:', error.message);
+              console.error('❌ Erro fatal:', error.message);
               Deno.exit(1);
             }
           }
