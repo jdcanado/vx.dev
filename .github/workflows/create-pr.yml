@@ -22,15 +22,94 @@ jobs:
         with:
           deno-version: v2.x
       
-      - name: Create deno.json
+      - name: Create common.ts with exports
         run: |
-          cat > deno.json << 'EOF'
-          {
-            "imports": {
-              "openai": "npm:openai@4.28.0"
-            },
-            "nodeModulesDir": "auto"
+          cat > prompts/common.ts << 'EOF'
+          export function getIssueEvent() {
+            return {
+              action: 'created',
+              issue: {
+                number: 1,
+                title: 'Test Issue',
+                body: 'Test body'
+              },
+              repository: {
+                name: 'vx.dev',
+                owner: { login: 'owner' }
+              }
+            };
           }
+          
+          export function getComment() {
+            return {
+              comment: {
+                body: 'Test comment',
+                user: { login: 'user' }
+              }
+            };
+          }
+          
+          export function getPullRequest() {
+            return {
+              pull_request: {
+                number: 1,
+                title: 'Test PR',
+                body: 'Test PR body'
+              }
+            };
+          }
+          
+          // GitHub API helper usando fetch
+          export async function githubRequest(endpoint: string, token: string, options: any = {}) {
+            const response = await fetch(`https://api.github.com${endpoint}`, {
+              ...options,
+              headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'vx-dev/1.0.0',
+                ...options.headers
+              }
+            });
+            
+            if (!response.ok) {
+              const error = await response.text();
+              throw new Error(`GitHub API error ${response.status}: ${error}`);
+            }
+            
+            return response.json();
+          }
+          EOF
+      
+      - name: Create entry.ts with correct imports
+        run: |
+          cat > prompts/entry.ts << 'EOF'
+          import { getIssueEvent, githubRequest } from "./common.ts";
+          
+          // Função principal
+          async function main() {
+            try {
+              console.log('Iniciando processo...');
+              
+              // Obtém o evento
+              const eventData = getIssueEvent();
+              console.log('Evento obtido:', eventData);
+              
+              // Usa o helper do GitHub
+              if (Deno.env.get('GH_TOKEN')) {
+                const repos = await githubRequest('/user/repos', Deno.env.get('GH_TOKEN') || '');
+                console.log('Repositórios:', repos.length);
+              }
+              
+              // Lógica principal aqui
+              console.log('Processo concluído com sucesso!');
+            } catch (error) {
+              console.error('Erro:', error.message);
+              Deno.exit(1);
+            }
+          }
+          
+          // Executa a função principal
+          await main();
           EOF
       
       - name: Generate UI
