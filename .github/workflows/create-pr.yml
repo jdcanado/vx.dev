@@ -17,29 +17,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
         with:
-          node-version: '22'
+          deno-version: v2.x
       
-      - name: Create package.json with type module
+      - name: Create deno.json
         run: |
-          cat > package.json << 'EOF'
+          cat > deno.json << 'EOF'
           {
-            "name": "vx-dev",
-            "version": "1.0.0",
-            "type": "module",
-            "dependencies": {
-              "@octokit/rest": "^20.1.1",
-              "openai": "^4.28.0",
-              "tsx": "^4.0.0",
-              "typescript": "^5.0.0"
-            }
+            "imports": {
+              "@octokit/rest": "npm:@octokit/rest@20.1.1",
+              "openai": "npm:openai@4.28.0"
+            },
+            "nodeModulesDir": "auto"
           }
           EOF
-      
-      - name: Install dependencies
-        run: npm install
       
       - name: Generate UI
         env:
@@ -48,4 +41,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: npx tsx --esm prompts/entry.ts
+        run: deno run -A prompts/entry.ts
