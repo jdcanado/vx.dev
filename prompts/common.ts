@@ -11,7 +11,6 @@ import { visitParents } from "https://esm.sh/unist-util-visit-parents@6.0.1";
 import { toMarkdown } from "https://esm.sh/mdast-util-to-markdown@2.1.0";
 import { remove } from "https://esm.sh/unist-util-remove@4.0.0";
 import { Octokit } from "npm:octokit";
-import commitPlugin from "npm:octokit-commit-multiple-files";
 import { checkValid } from "./quota.ts";
 
 const apiKey = Deno.env.get("OPENAI_API_KEY");
@@ -84,11 +83,10 @@ type IssueEvent = {
   };
 };
 
-const PatchedOctokit = Octokit.plugin(commitPlugin);
 const ghToken = Deno.env.get("GH_TOKEN");
 assert(ghToken, "failed to get github token");
 
-export const octokit: Octokit = new PatchedOctokit({
+export const octokit = new Octokit({
   auth: ghToken,
 });
 
@@ -183,20 +181,82 @@ export async function applyPR(
 ) {
   const baseBranch = "main";
 
-  // deno-lint-ignore no-explicit-any
-  await (octokit as any).createOrUpdateFiles({
+  // Get the base branch SHA
+  const baseRef = await octokit.rest.git.getRef({
     owner,
     repo,
-    branch: newBranch,
-    createBranch: true,
-    // base: baseBranch,
-    // forkFromBaseBranch: true,
-    changes: [
-      {
-        message: commitMsg,
-        files,
-      },
-    ],
+    ref: `heads/${baseBranch}`,
+  });
+  const baseSha = baseRef.data.object.sha;
+
+  // Get or create the target branch
+  let branchSha: string;
+  try {
+    const branchRef = await octokit.rest.git.getRef({
+      owner,
+      repo,
+      ref: `heads/${newBranch}`,
+    });
+    branchSha = branchRef.data.object.sha;
+  } catch {
+    await octokit.rest.git.createRef({
+      owner,
+      repo,
+      ref: `refs/heads/${newBranch}`,
+      sha: baseSha,
+    });
+    branchSha = baseSha;
+  }
+
+  // Create blobs for each file
+  const fileBlobs = await Promise.all(
+    Object.entries(files).map(async ([path, content]) => {
+      const blob = await octokit.rest.git.createBlob({
+        owner,
+        repo,
+        content,
+        encoding: "utf-8",
+      });
+      return {
+        path,
+        mode: "100644" as const,
+        type: "blob" as const,
+        sha: blob.data.sha,
+      };
+    })
+  );
+
+  // Get current tree SHA from the branch's latest commit
+  const branchCommit = await octokit.rest.git.getCommit({
+    owner,
+    repo,
+    commit_sha: branchSha,
+  });
+  const currentTreeSha = branchCommit.data.tree.sha;
+
+  // Create a new tree with the file blobs
+  const newTree = await octokit.rest.git.createTree({
+    owner,
+    repo,
+    base_tree: currentTreeSha,
+    tree: fileBlobs,
+  });
+
+  // Create a new commit
+  const newCommit = await octokit.rest.git.createCommit({
+    owner,
+    repo,
+    message: commitMsg,
+    tree: newTree.data.sha,
+    parents: [branchSha],
+  });
+
+  // Update the branch reference
+  await octokit.rest.git.updateRef({
+    owner,
+    repo,
+    ref: `heads/${newBranch}`,
+    sha: newCommit.data.sha,
   });
 
   let pr = (
