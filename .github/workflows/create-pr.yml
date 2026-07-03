@@ -24,7 +24,7 @@ jobs:
         with:
           deno-version: v2.x
       
-      - name: Create common.ts with commit creation
+      - name: Create common.ts with branch handling
         run: |
           cat > prompts/common.ts << 'EOF'
           export function getIssueEvent() {
@@ -85,6 +85,53 @@ jobs:
             }
             
             return data;
+          }
+          
+          // Função para verificar se o branch existe
+          export async function branchExists(token: string, repoOwner: string, repoName: string, branchName: string): Promise<boolean> {
+            try {
+              await githubRequest(
+                `/repos/${repoOwner}/${repoName}/git/ref/heads/${branchName}`,
+                token
+              );
+              return true;
+            } catch (error: any) {
+              if (error.message.includes('404')) {
+                return false;
+              }
+              throw error;
+            }
+          }
+          
+          // Função para criar ou atualizar o branch
+          export async function ensureBranch(token: string, repoOwner: string, repoName: string, branchName: string, baseBranch: string = 'main') {
+            console.log(`🔍 Verificando se o branch ${branchName} existe...`);
+            
+            const exists = await branchExists(token, repoOwner, repoName, branchName);
+            
+            if (exists) {
+              console.log(`✅ Branch ${branchName} já existe, usando-o...`);
+              return;
+            }
+            
+            console.log(`🌿 Criando branch ${branchName} a partir de ${baseBranch}`);
+            const baseRef = await githubRequest(
+              `/repos/${repoOwner}/${repoName}/git/ref/heads/${baseBranch}`,
+              token
+            );
+            
+            await githubRequest(
+              `/repos/${repoOwner}/${repoName}/git/refs`,
+              token,
+              {
+                method: 'POST',
+                body: JSON.stringify({
+                  ref: `refs/heads/${branchName}`,
+                  sha: baseRef.object.sha
+                })
+              }
+            );
+            console.log(`✅ Branch ${branchName} criado com sucesso`);
           }
           
           // Função para criar um commit no branch
@@ -179,25 +226,8 @@ jobs:
             const baseBranch = 'main';
             
             try {
-              // 1. Cria o branch a partir do main
-              console.log(`🌿 Criando branch ${branchName} a partir de ${baseBranch}`);
-              const baseRef = await githubRequest(
-                `/repos/${repoOwner}/${repoName}/git/ref/heads/${baseBranch}`,
-                token
-              );
-              
-              await githubRequest(
-                `/repos/${repoOwner}/${repoName}/git/refs`,
-                token,
-                {
-                  method: 'POST',
-                  body: JSON.stringify({
-                    ref: `refs/heads/${branchName}`,
-                    sha: baseRef.object.sha
-                  })
-                }
-              );
-              console.log(`✅ Branch ${branchName} criado`);
+              // 1. Garante que o branch existe
+              await ensureBranch(token, repoOwner, repoName, branchName, baseBranch);
               
               // 2. Cria um arquivo com o conteúdo da issue
               const filePath = `issues/issue-${issueNumber}.md`;
