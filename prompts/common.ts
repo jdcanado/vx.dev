@@ -40,25 +40,32 @@ export async function getCode(
       const rawContent = chatCompletion.choices[0].message.content || "";
       console.log("raw output> ", rawContent);
 
-      // Extrai blocos de código markdown com regex
-      const codeBlockRegex = /```[\w]*\n([\s\S]*?)```/g;
+      // Tenta extrair blocos de código markdown ```...```
+      const codeBlockRegex = /```[\w]*\r?\n?([\s\S]*?)```/g;
       const codeBlocks: string[] = [];
       let match;
       while ((match = codeBlockRegex.exec(rawContent)) !== null) {
         codeBlocks.push(match[1].trim());
       }
 
-      if (codeBlocks.length !== 1) {
-        throw new Error(`invalid code blocks ${JSON.stringify(codeBlocks)}`);
+      let code: string;
+      let description: string;
+
+      if (codeBlocks.length >= 1) {
+        // Usa o primeiro bloco de código encontrado
+        code = codeBlocks[0];
+        // Remove todos os blocos de código do markdown
+        description = rawContent
+          .replace(/```[\w]*\r?\n?[\s\S]*?```/g, "")
+          .trim();
+      } else {
+        // Sem blocos markdown: usa o conteúdo inteiro como código
+        code = rawContent.trim();
+        description = "";
       }
 
-      // Remove o bloco de código do markdown para obter a descrição
-      const description = rawContent
-        .replace(/```[\w]*\n[\s\S]*?```/g, "")
-        .trim();
-
       return {
-        code: codeBlocks[0],
+        code,
         usage: chatCompletion.usage,
         description,
       };
