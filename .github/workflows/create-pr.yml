@@ -22,12 +22,13 @@ jobs:
         with:
           deno-version: v2.x
       
-      - name: Create deno.json
+      - name: Create deno.json with compatible versions
         run: |
           cat > deno.json << 'EOF'
           {
             "imports": {
-              "@octokit/rest": "npm:@octokit/rest@20.1.1",
+              "@octokit/rest": "npm:@octokit/rest@19.0.13",
+              "@octokit/core": "npm:@octokit/core@4.2.4",
               "openai": "npm:openai@4.28.0"
             },
             "nodeModulesDir": "auto"
