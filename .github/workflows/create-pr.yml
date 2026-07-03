@@ -15,19 +15,19 @@ jobs:
     if: "!contains(github.event.comment.body , '[vx.dev]') && github.event.comment.user.type != 'bot'"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          deno-version: v2.x
       
       - name: Create import map for Node.js compatibility
         run: |
           cat > import_map.json << 'EOF'
           {
             "imports": {
-              "node:crypto": "https://deno.land/std@0.208.0/node/crypto.ts",
+              "node:crypto": "https://deno.land/std@0.224.0/node/crypto.ts",
               "universal-github-app-jwt": "https://esm.sh/universal-github-app-jwt@2.2.2"
             }
           }
@@ -40,4 +40,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: deno run -A --import-map=import_map.json --node-modules-dir --unstable prompts/entry.ts
+        run: deno run -A --import-map=import_map.json --node-modules-dir prompts/entry.ts
