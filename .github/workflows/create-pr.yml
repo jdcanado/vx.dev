@@ -22,10 +22,24 @@ jobs:
         with:
           node-version: '22'
       
-      - name: Install dependencies
+      - name: Create package.json with type module
         run: |
-          npm init -y
-          npm install @octokit/rest@20.1.1 openai tsx typescript @octokit/core@5.2.0
+          cat > package.json << 'EOF'
+          {
+            "name": "vx-dev",
+            "version": "1.0.0",
+            "type": "module",
+            "dependencies": {
+              "@octokit/rest": "^20.1.1",
+              "openai": "^4.28.0",
+              "tsx": "^4.0.0",
+              "typescript": "^5.0.0"
+            }
+          }
+          EOF
+      
+      - name: Install dependencies
+        run: npm install
       
       - name: Generate UI
         env:
@@ -34,4 +48,4 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: npx tsx prompts/entry.ts
+        run: npx tsx --esm prompts/entry.ts
