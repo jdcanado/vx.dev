@@ -7,7 +7,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: read
 
 jobs:
   deploy-preview:
@@ -17,22 +16,10 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'vue-ui-gen') ||
       contains(github.event.pull_request.labels.*.name, 'svelte-ui-gen')
     steps:
-      - name: Checkout main (configs sempre atualizadas)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
-          fetch-depth: 0
-
-      - name: Fetch PR branch
-        run: git fetch origin ${{ github.event.pull_request.head.ref }}
-
-      - name: Overlay Preview files from PR
-        run: |
-          git checkout origin/${{ github.event.pull_request.head.ref }} -- \
-            preview-ui/src/Preview.jsx \
-            vue-preview-ui/src/Preview.vue \
-            svelte-preview-ui/src/routes/preview.svelte \
-            scripts/build-task 2>/dev/null || true
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
