@@ -20,19 +20,9 @@ jobs:
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.x  # Use latest stable
+          deno-version: v1.x
       
-      - name: Create import map
-        run: |
-          cat > import_map.json << 'EOF'
-          {
-            "imports": {
-              "node:crypto": "https://deno.land/std@0.208.0/node/crypto.ts"
-            }
-          }
-          EOF
-      
-      - name: generate UI
+      - name: Generate UI
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -40,4 +30,4 @@ jobs:
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
         run: |
-          deno run -A --import-map=import_map.json --node-modules-dir --unstable prompts/entry.ts
+          deno run -A --node-modules-dir --unstable --allow-all prompts/entry.ts
