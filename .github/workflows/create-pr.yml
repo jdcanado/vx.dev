@@ -22,13 +22,11 @@ jobs:
         with:
           deno-version: v2.x
       
-      - name: Create common.ts with GitHub context
+      - name: Create common.ts with improved logic
         run: |
           cat > prompts/common.ts << 'EOF'
-          // Lê o evento do GitHub do arquivo de contexto
           export function getIssueEvent() {
             try {
-              // O GitHub Actions fornece o evento no arquivo GITHUB_EVENT_PATH
               const eventPath = Deno.env.get('GITHUB_EVENT_PATH');
               if (!eventPath) {
                 console.warn('GITHUB_EVENT_PATH não encontrado, usando dados mock');
@@ -65,9 +63,8 @@ jobs:
             };
           }
           
-          // Função para extrair dados relevantes da issue
           export function getIssueData(event: any) {
-            const issue = event.issue || event.pull_request || event.comment?.issue;
+            const issue = event.issue || event.pull_request;
             const repo = event.repository;
             const comment = event.comment;
             
@@ -80,11 +77,44 @@ jobs:
               repoOwner: repo?.owner?.login || '',
               commentBody: comment?.body || '',
               commentAuthor: comment?.user?.login || '',
-              action: event.action || ''
+              action: event.action || '',
+              labels: issue?.labels || [],
+              isLabeled: event.action === 'labeled' || issue?.labels?.some((l: any) => l.name === 'vx.dev') || false
             };
           }
           
-          // Função para criar PR com base na issue
+          // Verifica se deve processar a issue
+          export function shouldProcessIssue(issueData: any) {
+            // Condição 1: Issue foi marcada com label específica
+            if (issueData.isLabeled) {
+              console.log('✅ Issue marcada com vx.dev');
+              return true;
+            }
+            
+            // Condição 2: Issue foi editada e tem vx.dev no título ou corpo
+            if (issueData.action === 'edited' && 
+                (issueData.issueTitle?.includes('vx.dev') || 
+                 issueData.issueBody?.includes('vx.dev'))) {
+              console.log('✅ Issue contém vx.dev no título ou corpo');
+              return true;
+            }
+            
+            // Condição 3: Comentário contém [vx.dev]
+            if (issueData.commentBody?.includes('[vx.dev]')) {
+              console.log('✅ Comentário contém [vx.dev]');
+              return true;
+            }
+            
+            // Condição 4: Qualquer comentário (se estiver configurado)
+            if (issueData.commentBody && Deno.env.get('PROCESS_ALL_COMMENTS') === 'true') {
+              console.log('✅ Processando todos os comentários');
+              return true;
+            }
+            
+            console.log('⏭️ Nenhuma condição atendida, ignorando...');
+            return false;
+          }
+          
           export async function createPRFromIssue(token: string, issueData: any) {
             const { repoOwner, repoName, issueNumber, issueTitle, issueBody } = issueData;
             
@@ -94,13 +124,11 @@ jobs:
               token
             );
             
-            // Cria um branch baseado na issue
-            const branchName = `pr-from-issue-${issueNumber}`;
+            const branchName = `pr-from-issue-${issueNumber}-${Date.now()}`;
             
-            // Cria o PR
             const prData = {
               title: `PR: ${issueTitle}`,
-              body: `Este PR resolve a issue #${issueNumber}\n\n${issueBody}`,
+              body: `Este PR resolve a issue #${issueNumber}\n\n${issueBody}\n\n---\n\nGerado automaticamente pelo vx.dev`,
               head: branchName,
               base: 'main'
             };
@@ -111,6 +139,17 @@ jobs:
               {
                 method: 'POST',
                 body: JSON.stringify(prData)
+              }
+            );
+          }
+          
+          export async function addLabel(token: string, repoOwner: string, repoName: string, issueNumber: number, label: string) {
+            return await githubRequest(
+              `/repos/${repoOwner}/${repoName}/issues/${issueNumber}/labels`,
+              token,
+              {
+                method: 'POST',
+                body: JSON.stringify([label])
               }
             );
           }
@@ -135,16 +174,22 @@ jobs:
           }
           EOF
       
-      - name: Create entry.ts with real issue data
+      - name: Create entry.ts with conditions
         run: |
           cat > prompts/entry.ts << 'EOF'
-          import { getIssueEvent, getIssueData, createPRFromIssue, githubRequest } from "./common.ts";
+          import { 
+            getIssueEvent, 
+            getIssueData, 
+            shouldProcessIssue,
+            createPRFromIssue, 
+            addLabel,
+            githubRequest 
+          } from "./common.ts";
           
           async function main() {
             try {
               console.log('🚀 Iniciando processo...');
               
-              // Obtém o evento real do GitHub
               const event = getIssueEvent();
               const issueData = getIssueData(event);
               
@@ -152,7 +197,10 @@ jobs:
                 número: issueData.issueNumber,
                 título: issueData.issueTitle,
                 autor: issueData.issueAuthor,
-                repositório: `${issueData.repoOwner}/${issueData.repoName}`
+                repositório: `${issueData.repoOwner}/${issueData.repoName}`,
+                ação: issueData.action,
+                temLabel: issueData.isLabeled,
+                labels: issueData.labels.map((l: any) => l.name).join(', ')
               });
               
               const token = Deno.env.get('GH_TOKEN');
@@ -160,11 +208,17 @@ jobs:
                 throw new Error('GH_TOKEN não configurado');
               }
               
-              // Verifica se é uma issue ou comentário
+              // Verifica se deve processar
+              if (!shouldProcessIssue(issueData)) {
+                console.log('⏭️ Issue ignorada');
+                return;
+              }
+              
+              // Processa a issue
               if (event.issue || event.pull_request) {
                 console.log('📝 Processando issue/PR...');
                 
-                // Busca informações detalhadas da issue
+                // Busca detalhes da issue
                 const issueDetails = await githubRequest(
                   `/repos/${issueData.repoOwner}/${issueData.repoName}/issues/${issueData.issueNumber}`,
                   token
@@ -176,22 +230,59 @@ jobs:
                   labels: issueDetails.labels?.map((l: any) => l.name) || []
                 });
                 
-                // Verifica se a issue tem label específica
-                const hasVxLabel = issueDetails.labels?.some((l: any) => l.name === 'vx.dev');
-                
-                if (hasVxLabel || event.action === 'labeled') {
-                  console.log('🏷️ Issue marcada para processamento!');
+                // Se a ação for 'labeled' ou já tiver a label
+                if (issueData.action === 'labeled' || issueData.isLabeled) {
+                  console.log('🏷️ Processando issue com label vx.dev...');
                   
-                  // Cria o PR baseado na issue
-                  const pr = await createPRFromIssue(token, issueData);
-                  console.log('✅ PR criado com sucesso:', pr.html_url);
-                } else {
-                  console.log('⏭️ Issue não marcada com vx.dev, ignorando...');
+                  try {
+                    const pr = await createPRFromIssue(token, issueData);
+                    console.log('✅ PR criado com sucesso!');
+                    console.log('🔗 URL:', pr.html_url);
+                    console.log('📝 Número:', pr.number);
+                    
+                    // Adiciona label de PR criado
+                    await addLabel(
+                      token, 
+                      issueData.repoOwner, 
+                      issueData.repoName, 
+                      issueData.issueNumber, 
+                      'pr-criado'
+                    );
+                    console.log('✅ Label "pr-criado" adicionada');
+                    
+                  } catch (error) {
+                    console.error('❌ Erro ao criar PR:', error.message);
+                    
+                    // Adiciona label de erro
+                    await addLabel(
+                      token, 
+                      issueData.repoOwner, 
+                      issueData.repoName, 
+                      issueData.issueNumber, 
+                      'erro-geracao'
+                    );
+                  }
                 }
               } else if (event.comment) {
                 console.log('💬 Processando comentário...');
-                console.log('Comentário:', event.comment.body);
-                console.log('Autor:', event.comment.user.login);
+                console.log('Comentário:', event.comment.body?.substring(0, 100) + '...');
+                
+                // Verifica se o comentário contém comando
+                if (event.comment.body?.includes('[vx.dev]')) {
+                  console.log('🔧 Comando vx.dev detectado!');
+                  
+                  // Adiciona label manualmente se não tiver
+                  if (!issueData.isLabeled) {
+                    await addLabel(
+                      token, 
+                      issueData.repoOwner, 
+                      issueData.repoName, 
+                      issueData.issueNumber, 
+                      'vx.dev'
+                    );
+                    console.log('✅ Label vx.dev adicionada via comentário');
+                  }
+                }
               } else {
                 console.log('ℹ️ Evento não identificado:', event.action);
               }
@@ -199,6 +290,7 @@ jobs:
               console.log('✅ Processo concluído!');
             } catch (error) {
               console.error('❌ Erro:', error.message);
+              console.error('Stack:', error.stack);
               Deno.exit(1);
             }
           }
@@ -213,4 +305,5 @@ jobs:
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
+          PROCESS_ALL_COMMENTS: ${{ vars.PROCESS_ALL_COMMENTS || 'false' }}
         run: deno run -A prompts/entry.ts
