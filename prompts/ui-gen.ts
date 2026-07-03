@@ -87,15 +87,17 @@ function refineCode(code: string) {
     }
   }
 
-  // Remove todos os imports que não são de 'react'
-  const nonReactImportRegex = /^import\s+(?:(?!['"]react['"]).)*?\s*;?\s*$/gm;
-  // Mas preserva os imports de 'react'
+  // Remove TODOS os imports (single e multi-linha) — serão reconstruídos depois
   let cleanedCode = code;
-  // Remove non-react imports
+  // Captura e remove imports multi-linha e single-linha
   cleanedCode = cleanedCode.replace(
-    /^import\s+(?!(?:type\s+)?[\w\s{},*]+\s+from\s+['"]react['"]).+$/gm,
+    /^import\s+\{[\s\S]*?\}\s*from\s+['"][^'"]+['"]\s*;?|^import\s+\w+\s+from\s+['"][^'"]+['"]\s*;?/gm,
     ""
   );
+  // Remove fragmentos de imports quebrados (ex: "} from '...'" sem o "import {")
+  cleanedCode = cleanedCode.replace(/^\s*\}?\s*from\s+['"][^'"]+['"]\s*;?\s*$/gm, "");
+  // Remove linhas em branco triplas que sobraram
+  cleanedCode = cleanedCode.replace(/\n{3,}/g, "\n\n");
 
   // Coleta declarações de função/variável
   const funcDeclRegex = /(?:function|const)\s+(\w+)/g;
