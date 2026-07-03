@@ -1,7 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsiveLine } from '@nivo/line';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Gift, X, CalendarDays, Badge, LogIn, ArrowRight, Menu, Sparkles, Users, Check, ChevronRight, Clock, Calendar, Home, TrendingUp, Star, Shield, Globe, Lock } from 'lucide-react';
+import { Gift, X, CalendarDays, Badge, LogIn, ArrowRight, Menu, Sparkles, Users, Check, Play, ChevronRight, Star, Clock, Calendar, Home, TrendingUp, Shield, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -138,6 +138,37 @@ export default function AgendaAILandingRevised() {
   const [isAnnual, setIsAnnual] = React.useState(false);
   const [showOffer, setShowOffer] = React.useState(true);
   const [demoOpen, setDemoOpen] = React.useState(false);
+  const [exitIntentOpen, setExitIntentOpen] = React.useState(false);
+  const [countdown, setCountdown] = React.useState(86400); // 24h in seconds
+
+  // Countdown timer effect
+  React.useEffect(() => {
+    if (!showOffer) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [showOffer]);
+
+  // Exit intent detection
+  React.useEffect(() => {
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 0) {
+        setExitIntentOpen(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, []);
+
+  const formatCountdown = () => {
+    const hours = Math.floor(countdown / 3600);
+    const minutes = Math.floor((countdown % 3600) / 60);
+    const seconds = countdown % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   const yearlySavings = (meetingsPerWeek * avgDuration * 0.3) / 60;
   const yearlyCost = isAnnual ? 90 : 12 * 15;
@@ -145,12 +176,14 @@ export default function AgendaAILandingRevised() {
   return (
     <TooltipProvider>
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
-        {/* ---- Sticky CTA Banner (urgency) ---- */}
+        {/* ---- Sticky CTA Banner (urgency with countdown) ---- */}
         {showOffer && (
           <div className="bg-indigo-600 text-white py-3 px-4 flex items-center justify-center gap-3 text-sm font-medium relative">
             <Gift className="h-4 w-4" />
             <span>
-              🎉 <strong>Limited-time offer:</strong> Get 50% off your first year when you upgrade today! Use code <strong>SAVE50</strong>
+              🎉 <strong>Limited-time offer:</strong> 50% off your first year ends in{' '}
+              <span className="font-mono bg-white/20 px-2 py-0.5 rounded">{formatCountdown()}</span>
+              . Use code <strong>SAVE50</strong>
             </span>
             <Button
               variant="link"
@@ -284,34 +317,33 @@ export default function AgendaAILandingRevised() {
           )}
         </header>
 
-        {/* ---- Hero Section with motion, social proof, and interactive demo entry ---- */}
+        {/* ---- Hero Section with countdown, social proof, and interactive demo entry ---- */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50" />
           <div className="absolute top-20 right-0 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
           <div className="absolute bottom-10 left-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000" />
-          <div className="absolute top-1/3 left-1/3 w-10 h-10 bg-indigo-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-float" />
+          <div className="absolute top-1/3 left-1/3 w-10 h-10 bg-indigo-400 rounded-full mix-blend-overlay filter blur-xl opacity-30 animate-bounce" />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
             <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
               <div className="mb-10 lg:mb-0">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 flex items-center gap-1 animate-pulse">
-                    <Sparkles className="h-3 w-3" /> Limited Offer – 50% off
+                    <Sparkles className="h-3 w-3" /> Limited Offer – 50% off ends in {formatCountdown()}
                   </Badge>
                   <Badge variant="outline" className="text-slate-600 border-slate-300">
                     <Users className="h-3 w-3 mr-1" /> Join 15,000+ users
                   </Badge>
                 </div>
+
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
-                  Never double‑book{' '}
+                  AI that finds the{' '}
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    again
+                    perfect meeting time
                   </span>
                 </h1>
                 <p className="mt-6 text-lg sm:text-xl text-slate-600 max-w-lg">
-                  Agenda AI uses artificial intelligence to find the perfect
-                  time for your meetings — automatically. Connect your calendar
-                  and let the magic happen.
+                  Stop wasting time coordinating schedules. Agenda AI analyzes calendars across your team, suggests optimal slots, and books meetings automatically. Free up 30% of your week starting today.
                 </p>
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md">
@@ -359,20 +391,29 @@ export default function AgendaAILandingRevised() {
                 </div>
 
                 {/* Quick Demo CTA */}
-                <div className="mt-6">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Button
                     variant="outline"
                     className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 gap-2 group"
                     onClick={() => setDemoOpen(true)}
                   >
-                    <CalendarDays className="h-4 w-4" />
-                    See a live demo
+                    <Play className="h-4 w-4" /> See a live demo
                     <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="gap-2 group"
+                    onClick={() => {
+                      const testimonials = document.getElementById('testimonials');
+                      testimonials?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <Star className="h-4 w-4" /> Read reviews
                   </Button>
                 </div>
               </div>
 
-              {/* Dashboard mockup with floating card */}
+              {/* Dashboard mockup with statistics */}
               <div className="relative">
                 <div className="rounded-2xl shadow-2xl bg-white/90 backdrop-blur-sm border border-slate-200 p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -465,21 +506,21 @@ export default function AgendaAILandingRevised() {
 
         {/* ---- Dialogue for Quick Demo ---- */}
         <Dialog open={demoOpen} onOpenChange={setDemoOpen}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>Quick Demo – Pick a Date</DialogTitle>
               <DialogDescription>
                 See how Agenda AI recommends time slots for you.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col md:flex-row items-center gap-6">
               <Calendar
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border"
+                className="rounded-md border shadow-sm"
               />
-              <div className="w-full">
+              <div className="flex-1 w-full">
                 <h4 className="text-sm font-medium mb-2">
                   Available Slots for{' '}
                   {date.toLocaleDateString('en-US', {
@@ -507,23 +548,26 @@ export default function AgendaAILandingRevised() {
                     )
                   )}
                 </div>
+                <p className="mt-4 text-xs text-slate-500">
+                  AI ranks slots based on your calendar density and team preferences.
+                </p>
               </div>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* ---- Social Proof Bar + Trust Badges with animated logos ---- */}
+        {/* ---- Social Proof Bar with trust badges and company logos ---- */}
         <section className="py-12 border-y border-slate-200 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm font-medium text-slate-500 mb-8">
-              TRUSTED BY TEAMS AT
+              TRUSTED BY INNOVATIVE TEAMS
             </p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center opacity-70 mb-8">
               {['Stripe', 'Shopify', 'Figma', 'Notion', 'Vercel'].map(
                 (company) => (
                   <div
                     key={company}
-                    className="text-xl font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-default"
+                    className="text-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors cursor-default"
                   >
                     {company}
                   </div>
@@ -551,9 +595,17 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Stats Section with animated progress and visual appeal ---- */}
+        {/* ---- Stats Section with animated progress ---- */}
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+                BY THE NUMBERS
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
+                The results speak for themselves
+              </h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
                 { number: '15,000+', label: 'Active Users', detail: '+28% this month' },
@@ -579,7 +631,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Features with Tabs – modern card design with icons ---- */}
+        {/* ---- Features with Tabs – modern card design ---- */}
         <section id="features" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -590,8 +642,7 @@ export default function AgendaAILandingRevised() {
                 Everything you need to master your schedule
               </h2>
               <p className="mt-4 text-lg text-slate-600">
-                From smart scheduling to advanced analytics, Agenda AI gives you
-                the tools to take control of your time.
+                From smart scheduling to advanced analytics, Agenda AI gives you the tools to take control of your time.
               </p>
             </div>
 
@@ -654,7 +705,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Time Savings Calculator with enhanced interactivity ---- */}
+        {/* ---- Interactive Time Savings Calculator ---- */}
         <section className="py-20 bg-white border-t border-slate-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
@@ -665,8 +716,7 @@ export default function AgendaAILandingRevised() {
                 See Your Time Savings
               </h2>
               <p className="mt-4 text-slate-600">
-                Adjust the sliders to estimate how much time Agenda AI can save
-                you every week.
+                Adjust the sliders to estimate how much time Agenda AI can save you every week.
               </p>
             </div>
             <div className="space-y-8 p-6 bg-slate-50 rounded-2xl">
@@ -705,7 +755,6 @@ export default function AgendaAILandingRevised() {
                     <p className="text-3xl font-extrabold text-indigo-600">
                       {yearlySavings.toFixed(1)} hours
                     </p>
-                    <div value={Math.min(100, yearlySavings * 10)} className="mt-2 h-1.5" />
                   </div>
                   <TrendingUp className="h-12 w-12 text-indigo-400" />
                 </CardContent>
@@ -717,7 +766,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- Interactive AI Demo with Calendar and time slots ---- */}
+        {/* ---- Interactive AI Demo Section (Calendar + Slots) ---- */}
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -769,8 +818,7 @@ export default function AgendaAILandingRevised() {
                   )}
                 </div>
                 <p className="mt-6 text-sm text-slate-500">
-                  AI automatically ranks slots based on your past behavior and
-                  calendar density.
+                  AI automatically ranks slots based on your past behavior and calendar density.
                 </p>
               </div>
             </div>
@@ -788,8 +836,7 @@ export default function AgendaAILandingRevised() {
                 See the Difference
               </h2>
               <p className="mt-4 text-slate-600">
-                Average weekly meeting conflicts dropped by 83% after adopting
-                Agenda AI.
+                Average weekly meeting conflicts dropped by 83% after adopting Agenda AI.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -809,7 +856,7 @@ export default function AgendaAILandingRevised() {
           </div>
         </section>
 
-        {/* ---- How It Works with animated step indicators ---- */}
+        {/* ---- How It Works with step indicators ---- */}
         <section id="how-it-works" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -1228,6 +1275,37 @@ export default function AgendaAILandingRevised() {
             </div>
           </div>
         </section>
+
+        {/* ---- Exit Intent Popup (abandoned cart technique) ---- */}
+        <Dialog open={exitIntentOpen} onOpenChange={setExitIntentOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Wait! Before you go...</DialogTitle>
+              <DialogDescription>
+                Get an extra <strong>20% off</strong> your first year and a free scheduling audit.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="bg-indigo-50 p-4 rounded-lg flex items-center gap-3">
+                <Gift className="h-8 w-8 text-indigo-600" />
+                <div>
+                  <p className="font-medium">Limited offer just for you</p>
+                  <p className="text-sm text-slate-600">Code: EXIT20</p>
+                </div>
+              </div>
+              <Input type="email" placeholder="Your best email" />
+              <Button
+                className="w-full bg-indigo-600 hover:bg-indigo-700"
+                onClick={() => {
+                  alert('Offer claimed!');
+                  setExitIntentOpen(false);
+                }}
+              >
+                Claim My Discount
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* ---- Footer with enhanced layout ---- */}
         <footer className="bg-slate-900 text-slate-300 py-12">
