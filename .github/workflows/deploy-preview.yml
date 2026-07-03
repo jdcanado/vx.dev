@@ -17,10 +17,22 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'vue-ui-gen') ||
       contains(github.event.pull_request.labels.*.name, 'svelte-ui-gen')
     steps:
-      - name: Checkout
+      - name: Checkout main (configs sempre atualizadas)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+
+      - name: Fetch PR branch
+        run: git fetch origin ${{ github.event.pull_request.head.ref }}
+
+      - name: Overlay Preview files from PR
+        run: |
+          git checkout origin/${{ github.event.pull_request.head.ref }} -- \
+            preview-ui/src/Preview.jsx \
+            vue-preview-ui/src/Preview.vue \
+            svelte-preview-ui/src/routes/preview.svelte \
+            scripts/build-task 2>/dev/null || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,7 +50,7 @@ jobs:
 
       - name: Build
         env:
-          BASE_URL: /pr-${{ github.event.pull_request.number }}/
+          BASE_URL: /${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/
         run: |
           cd ${{ steps.build-dir.outputs.dir }}
           yarn install
@@ -62,7 +74,6 @@ jobs:
             const owner = context.repo.owner;
             const url = `https://${owner}.github.io/${repo}/pr-${prNumber}/`;
 
-            // Remove previous preview comments
             const { data: comments } = await github.rest.issues.listComments({
               owner, repo, issue_number: prNumber
             });
@@ -74,7 +85,6 @@ jobs:
               }
             }
 
-            // Add new preview comment
             await github.rest.issues.createComment({
               owner,
               repo,
