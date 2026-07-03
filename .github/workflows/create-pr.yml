@@ -17,27 +17,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup Deno
-        uses: denoland/setup-deno@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          deno-version: v2.x
+          node-version: '22'
+          cache: 'npm'
       
-      - name: Create import map for Node.js compatibility
+      - name: Install dependencies
         run: |
-          cat > import_map.json << 'EOF'
-          {
-            "imports": {
-              "node:crypto": "https://deno.land/std@0.224.0/node/crypto.ts",
-              "universal-github-app-jwt": "https://esm.sh/universal-github-app-jwt@2.2.2"
-            }
-          }
-          EOF
+          npm install @octokit/rest @octokit/core universal-github-app-jwt openai
       
-      - name: Generate UI
+      - name: Generate UI with Node.js
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           WHITELIST: ${{ secrets.WHITELIST }}
           CONFIG: ${{ vars.CONFIG }}
           ACTOR: ${{ github.actor }}
-        run: deno run -A --import-map=import_map.json --node-modules-dir prompts/entry.ts
+        run: node prompts/entry.js
