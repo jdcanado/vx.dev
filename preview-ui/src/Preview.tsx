@@ -1,7 +1,7 @@
 import { ResponsiveBar } from '@nivo/bar';
 import { ResponsiveLine } from '@nivo/line';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Gift, X, CalendarDays, Badge, LogIn, ArrowRight, Menu, Sparkles, Users, Check, Play, ChevronRight, Star, Clock, Calendar, Home, TrendingUp, Shield, Globe, Lock } from 'lucide-react';
+import { Gift, X, CalendarDays, Home, LogIn, ArrowRight, Menu, Sparkles, Users, Eye, Check, Play, ChevronRight, Star, Clock, Calendar, TrendingUp, Shield, Globe, Lock, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Slider } from '@/components/ui/slider';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from '@/components/ui/carousel';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { Textarea } from '@/components/ui/textarea';
 
 
 // ---------------------- Helper Components ----------------------
@@ -140,6 +141,9 @@ export default function AgendaAILandingRevised() {
   const [demoOpen, setDemoOpen] = React.useState(false);
   const [exitIntentOpen, setExitIntentOpen] = React.useState(false);
   const [countdown, setCountdown] = React.useState(86400); // 24h in seconds
+  const [liveVisitors, setLiveVisitors] = React.useState(57);
+  const [recentSignup, setRecentSignup] = React.useState(null);
+  const [chatOpen, setChatOpen] = React.useState(false);
 
   // Countdown timer effect
   React.useEffect(() => {
@@ -159,6 +163,31 @@ export default function AgendaAILandingRevised() {
     };
     document.addEventListener('mouseleave', handleMouseLeave);
     return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, []);
+
+  // Simulate live visitors count (changes every 3–7s)
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveVisitors(Math.floor(Math.random() * 20) + 45);
+    }, Math.random() * 4000 + 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Simulate recent signup notifications (every 10–20s)
+  React.useEffect(() => {
+    const fakeSignups = [
+      { name: 'Sarah from Stripe', avatar: 'https://github.com/sarah.png' },
+      { name: 'Marcos from Brazil', avatar: 'https://github.com/marcus.png' },
+      { name: 'Emily from Figma', avatar: 'https://github.com/emily.png' },
+      { name: 'David from Berlin', avatar: 'https://github.com/david.png' },
+    ];
+    const interval = setInterval(() => {
+      const randomUser = fakeSignups[Math.floor(Math.random() * fakeSignups.length)];
+      setRecentSignup(randomUser);
+      // Auto-dismiss after 4 seconds
+      setTimeout(() => setRecentSignup(null), 4000);
+    }, Math.random() * 10000 + 8000);
+    return () => clearInterval(interval);
   }, []);
 
   const formatCountdown = () => {
@@ -212,9 +241,9 @@ export default function AgendaAILandingRevised() {
                 <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Agenda AI
                 </span>
-                <Badge variant="outline" className="ml-2 text-xs font-medium border-indigo-200 text-indigo-600">
+                <div variant="outline" className="ml-2 text-xs font-medium border-indigo-200 text-indigo-600">
                   Beta
-                </Badge>
+                </div>
               </div>
 
               <nav className="hidden md:flex items-center space-x-1">
@@ -328,12 +357,15 @@ export default function AgendaAILandingRevised() {
             <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
               <div className="mb-10 lg:mb-0">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200 flex items-center gap-1 animate-pulse">
+                  <div className="bg-indigo-100 text-indigo-700 border-indigo-200 flex items-center gap-1 animate-pulse">
                     <Sparkles className="h-3 w-3" /> Limited Offer – 50% off ends in {formatCountdown()}
-                  </Badge>
-                  <Badge variant="outline" className="text-slate-600 border-slate-300">
+                  </div>
+                  <div variant="outline" className="text-slate-600 border-slate-300">
                     <Users className="h-3 w-3 mr-1" /> Join 15,000+ users
-                  </Badge>
+                  </div>
+                  <div variant="outline" className="text-green-600 border-green-200">
+                    <Eye className="h-3 w-3 mr-1" /> {liveVisitors} people viewing now
+                  </div>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900">
@@ -582,9 +614,9 @@ export default function AgendaAILandingRevised() {
               ].map((badge) => (
                 <Tooltip key={badge.text}>
                   <TooltipTrigger asChild>
-                    <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 cursor-help hover:bg-indigo-50">
+                    <div variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 cursor-help hover:bg-indigo-50">
                       <badge.icon className="h-3 w-3 mr-1" /> {badge.text}
-                    </Badge>
+                    </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>We take security seriously</p>
@@ -599,9 +631,9 @@ export default function AgendaAILandingRevised() {
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+              <div variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 BY THE NUMBERS
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 The results speak for themselves
               </h2>
@@ -635,9 +667,9 @@ export default function AgendaAILandingRevised() {
         <section id="features" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+              <div variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 <Sparkles className="h-3 w-3 mr-1" /> Powerful Features
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Everything you need to master your schedule
               </h2>
@@ -709,9 +741,9 @@ export default function AgendaAILandingRevised() {
         <section className="py-20 bg-white border-t border-slate-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+              <div className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
                 Interactive
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 See Your Time Savings
               </h2>
@@ -770,9 +802,9 @@ export default function AgendaAILandingRevised() {
         <section className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+              <div className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
                 Live Demo
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Try Agenda AI
               </h2>
@@ -829,9 +861,9 @@ export default function AgendaAILandingRevised() {
         <section className="py-20 bg-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+              <div className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
                 Real Results
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 See the Difference
               </h2>
@@ -860,9 +892,9 @@ export default function AgendaAILandingRevised() {
         <section id="how-it-works" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+              <div variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 Simple Process
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Get started in 3 easy steps
               </h2>
@@ -918,9 +950,9 @@ export default function AgendaAILandingRevised() {
         <section id="testimonials" className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+              <div variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 Testimonials
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Loved by busy professionals
               </h2>
@@ -1016,9 +1048,9 @@ export default function AgendaAILandingRevised() {
         <section id="pricing" className="py-20 bg-slate-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <Badge className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
+              <div className="mb-4 bg-indigo-100 text-indigo-700 border-indigo-200">
                 Pricing
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Plans for every team size
               </h2>
@@ -1113,9 +1145,9 @@ export default function AgendaAILandingRevised() {
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-indigo-600 hover:bg-indigo-600">
+                      <div className="bg-indigo-600 hover:bg-indigo-600">
                         Most Popular
-                      </Badge>
+                      </div>
                     </div>
                   )}
                   <CardHeader>
@@ -1155,12 +1187,12 @@ export default function AgendaAILandingRevised() {
                       {plan.cta}
                     </Button>
                     {plan.popular && (
-                      <Badge
+                      <div
                         variant="outline"
                         className="text-green-600 border-green-200"
                       >
                         30-day money-back guarantee
-                      </Badge>
+                      </div>
                     )}
                   </CardFooter>
                 </Card>
@@ -1173,9 +1205,9 @@ export default function AgendaAILandingRevised() {
         <section id="faq" className="py-20 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <Badge variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
+              <div variant="outline" className="mb-4 text-indigo-600 border-indigo-200">
                 FAQ
-              </Badge>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
                 Frequently asked questions
               </h2>
@@ -1226,9 +1258,9 @@ export default function AgendaAILandingRevised() {
             <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-300 rounded-full mix-blend-overlay filter blur-3xl animate-pulse animation-delay-2000" />
           </div>
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <Badge className="mb-4 bg-white/20 text-white border-none">
+            <div className="mb-4 bg-white/20 text-white border-none">
               LIMITED TIME OFFER
-            </Badge>
+            </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
               Ready to reclaim your time?
             </h2>
@@ -1306,6 +1338,71 @@ export default function AgendaAILandingRevised() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* ---- Recent Signup Notification (social proof popup) ---- */}
+        {recentSignup && (
+          <div className="fixed bottom-4 left-4 z-50 animate-slide-up bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg shadow-lg p-3 flex items-center gap-3 max-w-xs">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={recentSignup.avatar} />
+              <AvatarFallback>US</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium">{recentSignup.name}</p>
+              <p className="text-xs text-green-600">just signed up</p>
+            </div>
+            <button onClick={() => setRecentSignup(null)}>
+              <X className="h-4 w-4 text-slate-400" />
+            </button>
+          </div>
+        )}
+
+        {/* ---- Chat / Help Button ---- */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                className="rounded-full h-12 w-12 bg-indigo-600 hover:bg-indigo-700 shadow-lg"
+                onClick={() => setChatOpen(true)}
+              >
+                <MessageCircle className="h-5 w-5 text-white" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Need help? Chat with us</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+            <DialogContent className="sm:max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Live Chat</DialogTitle>
+                <DialogDescription>
+                  Leave your message and we’ll get back to you.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input placeholder="Your name" />
+                <Input placeholder="Your email" />
+                <Textarea placeholder="How can we help?" />
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                  Send Message
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* ---- Mobile Bottom Sticky CTA ---- */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 flex gap-2 z-50 shadow-lg">
+          <Button
+            className="w-full bg-indigo-600 hover:bg-indigo-700"
+            onClick={() => alert('Redirecting to signup...')}
+          >
+            Start Free Trial
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
 
         {/* ---- Footer with enhanced layout ---- */}
         <footer className="bg-slate-900 text-slate-300 py-12">
