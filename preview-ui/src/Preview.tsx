@@ -1,4 +1,4 @@
-import { Truck, ShieldCheck, Package, Clock, MapPin, Search, Check, User, Sheet, Menu, Badge, ArrowRight, Star, Home } from 'lucide-react';
+import { Truck, ShieldCheck, Package, Clock, MapPin, Search, Check, User, Sheet, Menu, Badge, ArrowRight, Star } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -21,12 +21,14 @@ const features = [
   {
     icon: <ShieldCheck className="h-10 w-10 text-blue-600" />,
     title: "Seguro e Confiável",
-    description: "Todos os envios com seguro incluso e rastreamento em tempo real.",
+    description:
+      "Todos os envios com seguro incluso e rastreamento em tempo real.",
   },
   {
     icon: <Package className="h-10 w-10 text-blue-600" />,
     title: "Embalagem Inteligente",
-    description: "Serviço de embalagem profissional para itens frágeis e especiais.",
+    description:
+      "Serviço de embalagem profissional para itens frágeis e especiais.",
   },
   {
     icon: <Clock className="h-10 w-10 text-blue-600" />,
@@ -111,28 +113,32 @@ const testimonials = [
   {
     name: "Ana Silva",
     role: "Dona de loja online",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
     quote: "A entrega mais rápida que já usei! Meus clientes adoram.",
     rating: 5,
   },
   {
     name: "Carlos Mendes",
     role: "Empreendedor",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     quote: "O rastreamento em tempo real me dá tranquilidade total.",
     rating: 4,
   },
   {
     name: "Juliana Costa",
     role: "Artesã",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
     quote: "Excelente cuidado com as embalagens, nada quebra.",
     rating: 5,
   },
   {
     name: "Ricardo Lima",
     role: "Gerente de e-commerce",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
     quote: "Integramos via API e os processos ficaram muito mais ágeis.",
     rating: 5,
   },
@@ -145,8 +151,6 @@ const footerLinks = {
 };
 
 export default function DeliveryLandingPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-white text-gray-800">
@@ -163,16 +167,28 @@ export default function DeliveryLandingPage() {
               <a href="#" className="text-sm font-medium hover:text-blue-600">
                 Início
               </a>
-              <a href="#features" className="text-sm font-medium hover:text-blue-600">
+              <a
+                href="#features"
+                className="text-sm font-medium hover:text-blue-600"
+              >
                 Funcionalidades
               </a>
-              <a href="#how-it-works" className="text-sm font-medium hover:text-blue-600">
+              <a
+                href="#how-it-works"
+                className="text-sm font-medium hover:text-blue-600"
+              >
                 Como funciona
               </a>
-              <a href="#pricing" className="text-sm font-medium hover:text-blue-600">
+              <a
+                href="#pricing"
+                className="text-sm font-medium hover:text-blue-600"
+              >
                 Planos
               </a>
-              <a href="#testimonials" className="text-sm font-medium hover:text-blue-600">
+              <a
+                href="#testimonials"
+                className="text-sm font-medium hover:text-blue-600"
+              >
                 Depoimentos
               </a>
             </nav>
@@ -180,7 +196,11 @@ export default function DeliveryLandingPage() {
             <div className="flex items-center space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="hidden md:flex">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hidden md:flex"
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Minha Conta
                   </Button>
@@ -209,19 +229,34 @@ export default function DeliveryLandingPage() {
                     </SheetTitle>
                   </SheetHeader>
                   <nav className="mt-6 flex flex-col space-y-4">
-                    <a href="#" className="text-sm font-medium hover:text-blue-600">
+                    <a
+                      href="#"
+                      className="text-sm font-medium hover:text-blue-600"
+                    >
                       Início
                     </a>
-                    <a href="#features" className="text-sm font-medium hover:text-blue-600">
+                    <a
+                      href="#features"
+                      className="text-sm font-medium hover:text-blue-600"
+                    >
                       Funcionalidades
                     </a>
-                    <a href="#how-it-works" className="text-sm font-medium hover:text-blue-600">
+                    <a
+                      href="#how-it-works"
+                      className="text-sm font-medium hover:text-blue-600"
+                    >
                       Como funciona
                     </a>
-                    <a href="#pricing" className="text-sm font-medium hover:text-blue-600">
+                    <a
+                      href="#pricing"
+                      className="text-sm font-medium hover:text-blue-600"
+                    >
                       Planos
                     </a>
-                    <a href="#testimonials" className="text-sm font-medium hover:text-blue-600">
+                    <a
+                      href="#testimonials"
+                      className="text-sm font-medium hover:text-blue-600"
+                    >
                       Depoimentos
                     </a>
                     <Separator />
@@ -284,7 +319,9 @@ export default function DeliveryLandingPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Pedido #12345</p>
-                    <p className="text-xs text-gray-500">Em trânsito • Chega hoje</p>
+                    <p className="text-xs text-gray-500">
+                      Em trânsito • Chega hoje
+                    </p>
                   </div>
                 </div>
               </div>
@@ -305,7 +342,10 @@ export default function DeliveryLandingPage() {
             </div>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {features.map((feature, idx) => (
-                <Card key={idx} className="relative transition-shadow hover:shadow-lg">
+                <Card
+                  key={idx}
+                  className="relative transition-shadow hover:shadow-lg"
+                >
                   <CardHeader>
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
                       {feature.icon}
@@ -341,7 +381,10 @@ export default function DeliveryLandingPage() {
             </div>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {steps.map((step, idx) => (
-                <div key={idx} className="relative flex flex-col items-center text-center">
+                <div
+                  key={idx}
+                  className="relative flex flex-col items-center text-center"
+                >
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-2xl font-bold text-white shadow-md">
                     {step.number}
                   </div>
@@ -385,10 +428,14 @@ export default function DeliveryLandingPage() {
                   <CardHeader>
                     <CardTitle className="text-xl">{plan.name}</CardTitle>
                     <div className="mt-2 flex items-baseline">
-                      <span className="text-4xl font-extrabold">{plan.price}</span>
+                      <span className="text-4xl font-extrabold">
+                        {plan.price}
+                      </span>
                       <span className="ml-1 text-gray-500">{plan.period}</span>
                     </div>
-                    <CardDescription className="mt-2">{plan.description}</CardDescription>
+                    <CardDescription className="mt-2">
+                      {plan.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="flex-1">
                     <ul className="space-y-2 text-sm">
@@ -437,7 +484,10 @@ export default function DeliveryLandingPage() {
             >
               <CarouselContent>
                 {testimonials.map((testimonial, idx) => (
-                  <CarouselItem key={idx} className="md:basis-1/2 lg:basis-1/3">
+                  <CarouselItem
+                    key={idx}
+                    className="md:basis-1/2 lg:basis-1/3"
+                  >
                     <Card className="flex h-full flex-col">
                       <CardContent className="flex flex-1 flex-col justify-between pt-6">
                         <div>
@@ -451,7 +501,9 @@ export default function DeliveryLandingPage() {
                               )
                             )}
                           </div>
-                          <p className="italic text-gray-600">"{testimonial.quote}"</p>
+                          <p className="italic text-gray-600">
+                            "{testimonial.quote}"
+                          </p>
                         </div>
                         <div className="mt-4 flex items-center space-x-3 border-t pt-4">
                           <Avatar>
@@ -581,8 +633,8 @@ export default function DeliveryLandingPage() {
                 <span className="text-xl font-bold">FastDelivery</span>
               </div>
               <p className="text-sm text-gray-600">
-                Entregando sonhos com segurança e agilidade desde 2020.
-                Sua parceira de logística completa.
+                Entregando sonhos com segurança e agilidade desde 2020. Sua
+                parceira de logística completa.
               </p>
               <div className="flex space-x-4">
                 <Tooltip>
